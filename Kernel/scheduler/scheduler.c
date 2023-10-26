@@ -1,276 +1,262 @@
-#include "scheduler.h"
+#include "scheduler.h" // Incluye el archivo de encabezado de tu scheduler
 
+//FIX: cambier mallocs por nuestro memory manager.
 
-#define STACK_SIZE (1024*4)
-#define MAX_PRIORITY 10
-#define DEFAULT_BACKGROUND_PRIORITY 1
-#define DEFAULT_FOREGROUND PRIORITY 2
-#define BACKGROUND 0
 #define READY 0
-#define FINISHED 1
-#define BLOCKED 2
+#define BLOCKED 1
 
+#define NUMBER_OF_PRIORITIES 9
+#define DEFAULT_PRIORITY 1
+int priorities[NUMBER_OF_PRIORITIES] = {9, 8, 7, 6, 5, 4, 3, 2, 1};
 
-static uint64_t cycles_left;
+// Schelduler states
+int processAmount = -1;
+unsigned int processReadyCount = 0;
+// pid_t dummyProcessPid = NULL;
+char proccessBeingRun = 0;
+int readyProcessAmount = 0;
 
-static void inactive_process(int argc, char** argv);
-static process_node* current_process = NULL;
-static process_list* processes;
-static process_node* base_process;
-static process_node* get_process(uint64_t pid);
+Node* active = NULL;
+Node* expired = NULL;
 
-
-typedef struct {
-    uint64_t gs;
-    uint64_t fs;
-    uint64_t r15;
-    uint64_t r14;
-    uint64_t r13;
-    uint64_t r12;
-    uint64_t r11;
-    uint64_t r10;
-    uint64_t r9;
-    uint64_t r8;
-    uint64_t rsi;
-    uint64_t rdi;
-    uint64_t rbp;
-    uint64_t rdx;
-    uint64_t rcx;
-    uint64_t rbx;
-    uint64_t rax;
-    uint64_t rip;
-    uint64_t cs;
-    uint64_t eflags;
-    uint64_t rsp;
-    uint64_t ss;
-    uint64_t base;
-} stack_frame;
-
-
-
-
-void start_scheduler(){
-    processes = malloc(sizeof(process_list));
-    if(processes == NULL){
-        return;
+void addToActiveProcesses(Node* newProcess) {
+    if (active == NULL) {
+        // Si la lista de procesos activos está vacía, el nuevo proceso se convierte en el primero.
+        newProcess->next = NULL;
+        active = newProcess;
+    } else {
+        // Si hay procesos activos en la lista, se agrega el nuevo proceso al principio.
+        newProcess->next = active;
+        active = newProcess;
     }
-    //inicializamos los campos de la estructura de process_list 
-    processes->size = 0;
-    processes->process_ready_size = 0;
-    processes->first = NULL;
-    processes->last = NULL;
-
-    //creamos el proceso inicial
-    char* argv[] = {"Initial Task"};
-    new_process(&inactive_process, 1, argv, BACKGROUND, 0);
-
-    //eliminamos un proceso de la lista de procesos
-    base_process = dequeue_process(processes);
-
 }
 
-void *scheduler(void* sp){
-    if(current_process != NULL){
-        //si no es nulo es porque hay un proceso en ejecucion
-        if(current_process->pcb.state == READY && cycles_left > 0){
-            cycles_left --;
-            //retornamos el puntero al registro de la pila actual
-            return sp;
-        }
-        //actualizamos el puntero de pila del proceso actual
-        current_process->pcb.RSP = sp;
+void addToExpiredProcesses(Node *newProcess) {
+    newProcess->next = NULL;
+    if (expired == NULL) {
+        // Si la lista de procesos expirados está vacía, el nuevo proceso se convierte en la lista.
+        expired = newProcess;
+    } else {
+        Node *current = expired;
+        Node *previous = NULL;
 
-        //verificamos si el proceso en ejecucion no es el proceso base
-        if(current_process->pcb.pid != base_process->pcb.pid){
-            //si el proceos termino la ejecucion esta listo para limpiarlo
-            if(current_process->pcb.state == FINISHED){
-                //obtenemos un puntero al proceso padre del proceso en ejecucion
-                process_node* parent = get_process(current_process->pcb.ppid);
-                //verificamos:
-                //si el puntero al parent no es nulo -> el proceso en ejecucion tiene un parent
-                //si el proceso en ejecucion esta en primer plano
-                //si el proceso parent esta bloqueado
-                if(parent != NULL && current_process->pcb.is_foreground && parent->pcb.state == BLOCKED){
-                    //si se cumplen las condiciones, ponemos al proceso parent en ready para seguir la ejecucion
-                    process_ready(parent->pcb.pid);
+        // Encuentra la ubicación correcta en la lista para insertar el nuevo proceso según su prioridad.
+        while (current != NULL && newProcess->process.priority <= current->process.priority) {
+            previous = current;
+            current = current->next;
+        }
+
+    // Verificar si el proceso debe agregarse a la lista de procesos activos o expirados
+    if (newProcess->process.priority >= DEFAULT_PRIORITY) {
+        // Agregar el proceso a la lista de procesos activos
+        addToActiveProcesses(newProcess);
+        processReadyCount++;
+    } else {
+        // Agregar el proceso a la lista de procesos expirados
+        addToExpiredProcesses(newProcess);
+    }
+        if (previous == NULL) {
+            // El nuevo proceso tiene la prioridad más alta, por lo que se convierte en el nuevo inicio de la lista.
+            newProcess->next = expired;
+            expired = newProcess;
+        } else {
+            // Inserta el nuevo proceso en la posición adecuada en la lista.
+            previous->next = newProcess;
+            newProcess->next = current;
+        }
+    }
+}
+
+// Función para copiar un arreglo de cadenas de caracteres
+char** copy_argv(int argc, char** argv) {
+    if (argc <= 0 || argv == NULL) {
+        return NULL; // Manejar casos de error
+    }
+
+    char** new_argv = (char**)malloc(argc * sizeof(char*));
+    if (new_argv == NULL) {
+        perror("Error al asignar memoria para los argumentos");
+        exit(EXIT_FAILURE);
+    }
+
+    for (int i = 0; i < argc; i++) {
+        new_argv[i] = (char*)malloc(strlen(argv[i]) + 1); // +1 para el carácter nulo
+        if (new_argv[i] == NULL) {
+            perror("Error al asignar memoria para los argumentos");
+            exit(EXIT_FAILURE);
+        }
+        strcpy(new_argv[i], argv[i]);
+    }
+
+    return new_argv;
+}
+
+
+
+
+
+void schedule() {
+    // Verificar si hay procesos listos para ejecutar
+    if (processReadyCount > 0) {
+        // Si hay procesos listos, seleccionar el siguiente proceso a ejecutar
+        Node *current = active;
+        Node *previous = NULL;
+
+        while (current != NULL && current->process.status != READY) {
+            previous = current;
+            current = current->next;
+        }
+
+        if (current != NULL) {
+            // Seleccionar el proceso con mayor prioridad
+            Node *selected = current;
+            while (current != NULL) {
+                if (current->process.priority > selected->process.priority) {
+                    selected = current;
                 }
-                //liberamos la memoria ocupada por el proceso en ejecucion
-                free_process(current_process);
-            }
-            else{
-                //si no termino el proceso en ejecucion, lo tenemos que volver a meter en la cola
-                queue_process(processes, current_process);
+                current = current->next;
             }
 
+            // Realizar el cambio de contexto al proceso seleccionado
+            if (previous != NULL) {
+                previous->next = selected->next;
+            } else {
+                active = selected->next;
+            }
+
+            selected->next = active;
+            active = selected;
+            // Ejecutar el proceso seleccionado
+            // executeProcess(active->process.rsp);
         }
+    } else {
+        // No hay procesos listos, ejecutar el proceso de reserva (placeholderProcess)
+        // executeProcess(placeholderProcessPid);
     }
-
-    if(processes->process_ready_size > 0){
-        //si hay procesos listos, tomamos el proximo proceso de la cola y la ponemos en current_process
-        current_process = dequeue_process(processes);
-        //entra en el ciclo hasta que el current este ready
-        while(current_process->pcb.state != READY){
-            if(current_process->pcb.state == FINISHED){
-                //obtenemos el proceso padre y verifica si debe desbloquearse
-                process_node* parent = get_process(current_process->pcb.ppid);
-                //si cumple que el padre existe, el proceso es foreground y el parent esta bloqueado
-                if(parent != NULL && current_process->pcb.is_foreground && parent->pcb.state == BLOCKED){
-                    //si las cumple llamamos a ready con el proceso padre
-                    process_ready(parent->pcb.pid);
-                }
-                //lo liberamos
-                free_process(current_process);
-            }
-            
-            if(current_process->pcb.state == BLOCKED){
-                //si esta bloqueado lo volvemos a meter en la cola
-                queue_process(processes, current_process);
-            }
-            //tomamos el siguiente proceso de la cola
-            current_process = dequeue_process(processes);
-        }
-        
-    } 
-    else {
-            //si no hay procesos listos vuelve al proceso base
-            current_process = base_process;
-        }
-    
-    cycles_left = current_process->pcb.priority;
-
-    //devolvemos el registro de pila del proceso actual
-    return current_process->pcb.RSP;
-
-}
-
-int set_state(uint64_t pid, int new_state) {
-    process_node* process = get_process(pid);
-
-    if (process == NULL || process->pcb.state == FINISHED) {
-        return -1;
-    }
-
-    if (process == current_process) {
-        process->pcb.state = new_state;
-        return process->pcb.pid;
-    }
-    //chequeamos si hay que incrementar o no el process_ready_size
-    if (process->pcb.state != READY && new_state == READY) {
-        processes->process_ready_size++;
-    }
-    if (process->pcb.state == READY && new_state != READY) {
-        processes->process_ready_size--;
-    }
-
-    process->pcb.state = new_state;
-
-    return process->pcb.pid;
 }
 
 
-static process_node* get_process(uint64_t pid){
-    //si es current retorno
-    if(current_process != NULL && current_process->pcb.pid  ==  pid){
-        return current_process;
+
+PCB *getProcess(pid_t pid) {
+    Node *current = active;
+
+    // Busca el proceso en la lista de procesos activos
+    while (current != NULL && current->process.pid != pid) {
+        current = current->next;
     }
 
-    process_node* process = processes->first;
-    //se ejecuta hasta que no haya procesos en la lista para ver
-    while(process != NULL){
-        //verificamos que el PID del actual sea igual al prporcionado
-        if(process->pcb.pid == pid){
-            //si es asi es porque se encontro el proceso buscado y lo retornamos
-            return process;
-        }
-        //actualizamos el puntero para que apunte al siguiente
-        process = (process_node*)process->next;
+    if (current != NULL) {
+        // Si se encuentra el proceso en la lista de procesos activos, devuelve su PCB
+        return &(current->process);
     }
+
+    current = expired;
+
+    // Busca el proceso en la lista de procesos expirados
+    while (current != NULL && current->process.pid != pid) {
+        current = current->next;
+    }
+
+    if (current != NULL) {
+        // Si se encuentra el proceso en la lista de procesos expirados, devuelve su PCB
+        return &(current->process);
+    }
+
+    // Si el proceso no se encuentra en ninguna lista, retorna NULL para indicar que no existe
     return NULL;
 }
 
-//funcion para mantener a la CPU ocupada cuando  no hay otras tareas activas
-static void inactive_process(int argc, char** argv){
-    while(1){
-        _hlt();
-    }
-}
+// Función para crear un nuevo proceso
+pid_t createProcess(uint64_t rip, int argc, char** argv) {
+    // Asignar memoria para la estructura PCB y otros recursos del proceso
+    Node* newProcess = (Node*)malloc(sizeof(PCB));
 
-void queue_process(process_list *processes, process_node *process){
-    process->next = NULL;
+    if (newProcess == NULL) {
+        perror("Error al asignar memoria para el proceso");
+        return -1; // Indica un error
+    }
     
-    if(is_queue_empty(processes)){
-        processes->first = process;
-        processes->last = process;
-    }
-    else{
-        processes->last->next = process;
-        processes->last = process;
+    // Configurar los campos del PCB con los valores necesarios
+    newProcess->process.pid = processAmount++; // Debes tener una función para generar PIDs únicos
+    newProcess->process.rip = rip; // Puntero de instrucción de inicio del proceso
+    newProcess->process.argc = argc;
+    newProcess->process.argv = copy_argv(argc, argv);
+
+    // Otras inicializaciones
+    newProcess->process.status = READY; // Puede ser READY, BLOCKED, o cualquier otro estado inicial
+    // newProcess->quantumsLeft = INITIAL_QUANTUMS; // Definir el número inicial de quantums
+    // newProcess->stackBase = allocateStackMemory(); // Debes tener una función para asignar memoria de pila
+    newProcess->process.priority = DEFAULT_PRIORITY; // Asignar una prioridad por defecto
+    
+    
+    // Verificar si el proceso debe agregarse a la lista de procesos activos o expirados
+    if (newProcess->process.priority >= DEFAULT_PRIORITY) {
+        // Agregar el proceso a la lista de procesos activos
+        addToActiveProcesses(newProcess);
+        processReadyCount++;
+    } else {
+        // Agregar el proceso a la lista de procesos expirados
+        addToExpiredProcesses(newProcess);
     }
 
-    if(process->pcb.state == READY){
-        processes->process_ready_size++;
-    }
-    processes->size++;
+
+    return newProcess->process.pid; // Devuelve el PID del nuevo proceso
 }
 
-process_node *dequeue_process(process_list *processes){
-    if(is_queue_empty(processes)){
-        return NULL;
+uint64_t getCurrentPid()
+{
+    if (active != NULL)
+    {
+        return active->process.pid;
     }
+    return -1;
+}
 
-    process_node *to_return = processes->first;
-    processes->first = to_return->next;
-
-    if(to_return->pcb.state == READY){
-        processes->process_ready_size--;
+int killProcess(pid_t pid) {
+    PCB *process = getProcess(pid);
+    if (process != NULL) {
+        // Realiza operaciones de terminación y limpieza utilizando el puntero 'process'.
+        // ...
+        return 0;
     }
-
-    to_return->next = NULL;
-    processes->size--;
-
-    return to_return;
+    return -1; // Proceso no encontrado.
 }
 
-int is_queue_empty(process_list *processes){
-    processes->process_ready_size;
+int changePriority(pid_t pid, int newPriority) {
+    if (newPriority < 0 || newPriority > 9)
+    {
+        return -1;
+    }
+    PCB *process = getProcess(pid);
+    if (process != NULL) {
+        process->priority = newPriority;
+
+        return 0;
+    }
+    return -1; // Proceso no encontrado.
 }
 
-int process_ready(uint64_t pid){
-    return set_state(pid, READY);
+
+int blockProcess(pid_t pid) {
+    PCB *process = getProcess(pid);
+    if (process != NULL) {
+        if (process->status == READY) {
+            process->status = BLOCKED;
+            processReadyCount--;
+            return 0;  // Éxito
+        }
+    }
+    return -1;  // Error: no se pudo bloquear el proceso
 }
 
-// //funcion de test
-// void simple_process(int argc, char** argv) {
-//     for (int i = 0; i < 5; i++) {
-//         printf("Process %s: Iteration %d\n", argv[0], i);
-//     }
-// }
-
-
-// int main() {
-//     start_scheduler();
-
-//     // Crear dos procesos
-//     char* argv1[] = {"Process 1"};
-//     char* argv2[] = {"Process 2"};
-//     int pid1 = new_process(&simple_process, 1, argv1, BACKGROUND, 0);
-//     int pid2 = new_process(&simple_process, 1, argv2, BACKGROUND, 0);
-
-//     // Ejecutar el planificador en un bucle
-//     for (int i = 0; i < 10; i++) {
-//         scheduler(NULL);
-
-//         if (i == 3) {
-//             // Bloquear el proceso 1 después de 3 iteraciones
-//             block(pid1);
-//         } else if (i == 6) {
-//             // Desbloquear el proceso 1 después de 6 iteraciones
-//             ready(pid1);
-//         }
-//     }
-
-//     return 0;
-// }
-
-
-// int new_process();nombre
+int unblockProcess(pid_t pid) {
+    PCB *process = getProcess(pid);
+    if (process != NULL) {
+        if (process->status == BLOCKED) {
+            process->status = READY;
+            processReadyCount++;
+            return 0;  // Éxito
+        }
+    }
+    return -1;  // Error: no se pudo desbloquear el proceso
+}
