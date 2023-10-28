@@ -4,6 +4,7 @@
 
 #define READY 0
 #define BLOCKED 1
+#define RUNNING 2
 
 #define NUMBER_OF_PRIORITIES 9
 #define DEFAULT_PRIORITY 1
@@ -28,7 +29,7 @@ void addToActiveProcesses(Node* newProcess) {
         // Si hay procesos activos en la lista, se agrega el nuevo proceso al principio.
         newProcess->next = active;
         active = newProcess;
-    }
+    }    char* argv[] = {"Initial Task"};
 }
 
 void addToExpiredProcesses(Node *newProcess) {
@@ -40,7 +41,7 @@ void addToExpiredProcesses(Node *newProcess) {
         Node *current = expired;
         Node *previous = NULL;
 
-        // Encuentra la ubicación correcta en la lista para insertar el nuevo proceso según su prioridad.
+        // Encuentra la ubicación correcta en la lista para insertar el nuevo proceso según p dsu prioridad.
         while (current != NULL && newProcess->process.priority <= current->process.priority) {
             previous = current;
             current = current->next;
@@ -93,47 +94,57 @@ char** copy_argv(int argc, char** argv) {
 
 
 
+void contextSwitch(Node* currentProcess, Node* nextProcess) {
+    if (currentProcess != NULL) {
+        // Guarda el contexto del proceso actual y cambia su estado
+        currentProcess->process.status = READY;
+        // Aquí deberías guardar el contexto actual (puntero de pila, registros, etc.)
+
+        // Si es necesario, actualiza el tiempo de CPU utilizado por el proceso actual
+        // y realiza otras operaciones de mantenimiento
+
+        // Guardar el contexto del proceso actual y cambiar su estado a READY
+    }
+
+    if (nextProcess != NULL) {
+        // Restaurar el contexto del próximo proceso y cambiar su estado
+        nextProcess->process.status = RUNNING;
+        // Aquí deberías restaurar el contexto (puntero de pila, registros, etc.)
+
+        // Actualizar el tiempo de CPU utilizado por el próximo proceso
+    }
+}
+
+
+
+Node* selectNextProcess() {
+    Node* current = active;
+    Node* selected = NULL;
+
+    while (current != NULL) {
+        if (current->process.status == READY) {
+            if (selected == NULL || current->process.priority > selected->process.priority) {
+                selected = current;
+            }
+        }
+        current = current->next;
+    }
+
+    return selected;
+}
 
 
 void schedule() {
-    // Verificar si hay procesos listos para ejecutar
-    if (processReadyCount > 0) {
-        // Si hay procesos listos, seleccionar el siguiente proceso a ejecutar
-        Node *current = active;
-        Node *previous = NULL;
+    // Seleccionar el próximo proceso a ejecutar (puedes usar una política simple)
+    Node* nextProcess = selectNextProcess();
 
-        while (current != NULL && current->process.status != READY) {
-            previous = current;
-            current = current->next;
-        }
-
-        if (current != NULL) {
-            // Seleccionar el proceso con mayor prioridad
-            Node *selected = current;
-            while (current != NULL) {
-                if (current->process.priority > selected->process.priority) {
-                    selected = current;
-                }
-                current = current->next;
-            }
-
-            // Realizar el cambio de contexto al proceso seleccionado
-            if (previous != NULL) {
-                previous->next = selected->next;
-            } else {
-                active = selected->next;
-            }
-
-            selected->next = active;
-            active = selected;
-            // Ejecutar el proceso seleccionado
-            // executeProcess(active->process.rsp);
-        }
-    } else {
-        // No hay procesos listos, ejecutar el proceso de reserva (placeholderProcess)
-        // executeProcess(placeholderProcessPid);
+    if (nextProcess != NULL) {
+        // Realizar el cambio de contexto
+        contextSwitch(active, nextProcess);
+        active = nextProcess;
     }
 }
+
 
 
 
@@ -259,4 +270,10 @@ int unblockProcess(pid_t pid) {
         }
     }
     return -1;  // Error: no se pudo desbloquear el proceso
+}
+
+int main(int argc, char *argv[])
+{
+
+    return 0;
 }
