@@ -5,10 +5,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
+#include <string.h>
 // #include <naiveConsole.h>
 // #include <interrupts.h>
 // #include <timerDriver.h>
-// #include <defs.h>
+#include "../include/defs.h"
 // #include <queue.h>
 #define READY 0
 #define BLOCKED 1
@@ -17,41 +18,41 @@
 #define CLOSED 0
 #define PIPESIZE 512
 
-// Blocked Queue
-typedef struct blockednode
-{
-    pid_t pid;
-    struct blockednode *next;
-} BlockedNode;
-typedef struct
-{
-    BlockedNode *first;
-    BlockedNode *last;
-    unsigned int qty;
-} BlockedQueueCDT;
+// // Blocked Queue
+// typedef struct blockednode
+// {
+//     pid_t pid;
+//     struct blockednode *next;
+// } BlockedNode;
+// typedef struct
+// {
+//     BlockedNode *first;
+//     BlockedNode *last;
+//     unsigned int qty;
+// } BlockedQueueCDT;
 
-typedef BlockedQueueCDT *BlockedQueueADT;
+// typedef BlockedQueueCDT *BlockedQueueADT;
 
 // Pipes
-typedef struct Pipe
-{
-    char data[PIPESIZE];
-    unsigned int processCount;
-    unsigned int openR;
-    unsigned int openW;
-    uint64_t indexR;
-    uint64_t indexW;
-    BlockedQueueADT queueWriteBlocked;
-    BlockedQueueADT queueReadBlocked;
-} Pipe;
-
-typedef struct pipeNode
-{
-    Pipe *pipe;
-    struct pipeNode *next;
-    struct pipeNode *previous;
-} pipeNode;
-typedef pipeNode *pipeList;
+// typedef struct Pipe
+// {
+//     char data[PIPESIZE];
+//     unsigned int processCount;
+//     unsigned int openR;
+//     unsigned int openW;
+//     uint64_t indexR;
+//     uint64_t indexW;
+//     BlockedQueueADT queueWriteBlocked;
+//     BlockedQueueADT queueReadBlocked;
+// } Pipe;
+//
+// typedef struct pipeNode
+// {
+//     Pipe *pipe;
+//     struct pipeNode *next;
+//     struct pipeNode *previous;
+// } pipeNode;
+// typedef pipeNode *pipeList;
 
 typedef struct
 {

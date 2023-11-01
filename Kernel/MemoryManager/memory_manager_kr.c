@@ -1,3 +1,5 @@
+#ifndef BUDDY_MM
+
 #include <stddef.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -221,6 +223,9 @@ info_mem_manager *info_memory_manager(){
     return dump;
 
 }
+
+#endif
+
 //TEST DE LA INFO
 // int main() {
 //     // Tamaño total de la memoria
