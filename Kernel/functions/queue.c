@@ -1,60 +1,62 @@
 #include "../include/queue.h"
-// #include <queue.h>
 
 // Esto es lo que usa un proceso para determinar los procesos bloqueados por el mismo
 // Ejemplo: lo usaria el semaforo para saber quienes estan bloqueados esperando al semaforo
+
+
 BlockedQueueADT newQueue() {
     BlockedQueueADT queue = memoryManagerAlloc(sizeof(BlockedQueueCDT));
-    if(queue == NULL) {
-        return NULL;
+    if (queue != NULL) {
+        queue->head = NULL;
+        queue->tail = NULL;
+        queue->size = 0;
     }
-    queue->first = NULL;
-    queue->last = NULL;
-    queue->qty = 0;
     return queue;
 }
 
 pid_t dequeuePid(BlockedQueueADT queue) {
-    if(queue == NULL) {
+    if (queue == NULL || queue->head == NULL) {
         return -1;
     }
-    BlockedNode * first = queue->first;
-    if(first == NULL) {
-        return -1;
+    BlockedNode *node = queue->head;
+    queue->head = node->next;
+    pid_t pid = node->pid;
+    memory_manager_free(node);
+    queue->size--;
+    if (queue->head == NULL) {
+        queue->tail = NULL;
     }
-    queue->qty--;
-    queue->first = first->next;
-    pid_t ans = first->pid;
-    memory_manager_free(first);
-    return ans;
+    return pid;
 }
 
 void enqueuePid(BlockedQueueADT queue, pid_t pid) {
-    if(queue == NULL) {
+    if (queue == NULL) {
         return;
     }
-    BlockedNode * newNode = memoryManagerAlloc(sizeof(BlockedNode));
+    BlockedNode *newNode = memoryManagerAlloc(sizeof(BlockedNode));
+    if (newNode == NULL) {
+        return;
+    }
     newNode->pid = pid;
     newNode->next = NULL;
-    if(queue->first == NULL) {
-        queue->first = newNode;
-        queue->last = newNode;
+    if (queue->tail == NULL) {
+        queue->head = newNode;
+        queue->tail = newNode;
     } else {
-        queue->last->next = newNode;
-        queue->last = newNode;
+        queue->tail->next = newNode;
+        queue->tail = newNode;
     }
-    queue->qty++;
+    queue->size++;
 }
 
 void freeQueue(BlockedQueueADT queue) {
     if (queue == NULL) {
         return;
     }
-
-    while (queue->first != NULL) {
-        BlockedNode * aux = queue->first;
-        queue->first = queue->first->next;
-        memory_manager_free(aux);
+    while (queue->head != NULL) {
+        BlockedNode *node = queue->head;
+        queue->head = node->next;
+        memory_manager_free(node);
     }
     memory_manager_free(queue);
 }
