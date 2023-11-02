@@ -1,22 +1,19 @@
 #ifndef QUEUE_H
 #define QUEUE_H
 
-#include "../include/defs.h"
-#include "../include/memoryManager.h"
+#include "defs.h"
+#include "memoryManager.h"
 
-// typedef int pid_t;
-// typedef struct blockednode
-// {
-//     pid_t pid;
-//     struct blockednode *next;
-// } BlockedNode;
-//
-// typedef struct
-// {
-//     BlockedNode *first;
-//     BlockedNode *last;
-//     unsigned int qty;
-// } BlockedQueueCDT;
+typedef struct BlockedNode {
+    pid_t pid;
+    struct BlockedNode *next;
+} BlockedNode;
+
+typedef struct BlockedQueueCDT {
+    BlockedNode *head;
+    BlockedNode *tail;
+    unsigned int size;
+} BlockedQueueCDT;
 
 typedef BlockedQueueCDT *BlockedQueueADT;
 

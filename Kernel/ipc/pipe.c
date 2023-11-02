@@ -6,8 +6,10 @@
 
 pipeList pipesList = NULL;
 
+//funcion para abrir un pipe nuevo
 Pipe *pipeOpen()
 {
+    //incluimos en el newpipe las variables de pipe e inicializamos
     Pipe *newPipe = (Pipe *)memoryManagerAlloc(sizeof(Pipe));
     newPipe->isReadOpen = 1;
     newPipe->isWriteOpen = 1;
@@ -82,16 +84,22 @@ int pipeReadData(Pipe *pipe, char *msg, int size) {
     int i;
     pid_t currentPid;
     for (i = 0; i < size; i++) {
+        //verificamos que el readIndex sea igual al writeIndex
         if (pipe->readIndex == pipe->writeIndex) {
+            //si lo son, es porque no hay datos para leer en el pipe
             currentPid = getCurrentPid();
+            //se agrega a la readQueue hasta que haya datos disponibles para leer
             enqueuePid(pipe->readQueue, currentPid);
+            //el proceso actual se blquea
             blockProcess(currentPid);
         }
-
+        //si hay datos, se lee un char y se almacena en msg
         msg[i] = pipe->data[pipe->readIndex % PIPESIZE];
         pipe->readIndex++;
-
+        //despues de cada lectura verificamos si hay procesos bloqueados esperando
+        //para escribir en el tubo
         while ((currentPid = dequeuePid(pipe->writeQueue)) != -1) {
+            //si hay, se desbloquean y se sacan de la writeQueue
             unblockProcess(currentPid);
         }
     }
@@ -101,6 +109,7 @@ int pipeReadData(Pipe *pipe, char *msg, int size) {
 
 
 //devuelve la cantidad de chars escritos y sino -1
+//funciona de manera similar que el pipeReadData
 int pipeWriteData(Pipe *pipe, const char *msg, int size) {
     if (!pipe->isWriteOpen) {
         return -1;

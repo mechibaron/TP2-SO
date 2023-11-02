@@ -1,9 +1,7 @@
 #include "../include/queue.h"
 
-// Esto es lo que usa un proceso para determinar los procesos bloqueados por el mismo
-// Ejemplo: lo usaria el semaforo para saber quienes estan bloqueados esperando al semaforo
 
-
+//funcion para la nueva queue de bloqueados
 BlockedQueueADT newQueue() {
     BlockedQueueADT queue = memoryManagerAlloc(sizeof(BlockedQueueCDT));
     if (queue != NULL) {
@@ -14,11 +12,14 @@ BlockedQueueADT newQueue() {
     return queue;
 }
 
+//funcion para eliminar un proceso de la queue de bloqueados. Devuelve el PID
 pid_t dequeuePid(BlockedQueueADT queue) {
     if (queue == NULL || queue->head == NULL) {
         return -1;
     }
+    //apuntamos al primer elemento de la queue
     BlockedNode *node = queue->head;
+    //actualizamos el puntero
     queue->head = node->next;
     pid_t pid = node->pid;
     memory_manager_free(node);
@@ -29,6 +30,7 @@ pid_t dequeuePid(BlockedQueueADT queue) {
     return pid;
 }
 
+//funcion para agregar un proceso a la queue
 void enqueuePid(BlockedQueueADT queue, pid_t pid) {
     if (queue == NULL) {
         return;
@@ -49,6 +51,7 @@ void enqueuePid(BlockedQueueADT queue, pid_t pid) {
     queue->size++;
 }
 
+//funcion para liberar la memoria de la queue
 void freeQueue(BlockedQueueADT queue) {
     if (queue == NULL) {
         return;
