@@ -8,7 +8,7 @@
 #include <stdint.h>
 #include "queue.h"
 
-// #define NULL ((void *)0)
+#define NULL ((void *)0)
 
 /* Flags para derechos de acceso de los segmentos */
 #define ACS_PRESENT     0x80            /* segmento presente en memoria */
@@ -30,12 +30,12 @@ typedef struct Pipe
 {
     char data[PIPESIZE];
     unsigned int processCount;
-    unsigned int openR;
-    unsigned int openW;
-    uint64_t indexR;
-    uint64_t indexW;
-    BlockedQueueADT queueWriteBlocked;
-    BlockedQueueADT queueReadBlocked;
+    unsigned int isReadOpen;
+    unsigned int isWriteOpen;
+    uint64_t readIndex;
+    uint64_t writeIndex;
+    BlockedQueueADT writeQueue;
+    BlockedQueueADT readQueue;
 } Pipe;
 
 typedef struct pipeNode
