@@ -1,4 +1,5 @@
 #include "../include/queue.h"
+#include "../include/defs.h"
 
 
 //funcion para la nueva queue de bloqueados
@@ -18,7 +19,7 @@ pid_t dequeuePid(BlockedQueueADT queue) {
         return -1;
     }
     //apuntamos al primer elemento de la queue
-    BlockedNode *node = queue->head;
+    blockednode *node = queue->head;
     //actualizamos el puntero
     queue->head = node->next;
     pid_t pid = node->pid;
@@ -35,7 +36,7 @@ void enqueuePid(BlockedQueueADT queue, pid_t pid) {
     if (queue == NULL) {
         return;
     }
-    BlockedNode *newNode = memoryManagerAlloc(sizeof(BlockedNode));
+    blockednode *newNode = memoryManagerAlloc(sizeof(blockednode));
     if (newNode == NULL) {
         return;
     }
@@ -57,7 +58,7 @@ void freeQueue(BlockedQueueADT queue) {
         return;
     }
     while (queue->head != NULL) {
-        BlockedNode *node = queue->head;
+        blockednode *node = queue->head;
         queue->head = node->next;
         memory_manager_free(node);
     }

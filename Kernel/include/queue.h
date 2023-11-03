@@ -2,20 +2,24 @@
 #define QUEUE_H
 
 #include "defs.h"
-#include "memoryManager.h"
+#include "../include/memoryManager.h"
 
-typedef struct BlockedNode {
+typedef int pid_t;
+typedef struct blockednode
+{
     pid_t pid;
-    struct BlockedNode *next;
-} BlockedNode;
+    struct blockednode *next;
 
-typedef struct BlockedQueueCDT {
-    BlockedNode *head;
-    BlockedNode *tail;
+} blockednode;
+
+typedef struct {
+    blockednode *head;
+    blockednode *tail;
     unsigned int size;
 } BlockedQueueCDT;
 
 typedef BlockedQueueCDT *BlockedQueueADT;
+
 
 BlockedQueueADT newQueue();
 pid_t dequeuePid(BlockedQueueADT queue);

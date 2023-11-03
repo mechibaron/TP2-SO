@@ -6,6 +6,7 @@
 #define _defs_
 
 #include <stdint.h>
+#include "queue.h"
 
 #define NULL ((void *)0)
 
@@ -25,23 +26,6 @@
 #define ACS_STACK       (ACS_PRESENT | ACS_DSEG | ACS_WRITE)
 
 #define PIPESIZE 512
-
-typedef int pid_t;
-typedef struct blockednode
-{
-    pid_t pid;
-    struct blockednode *next;
-} BlockedNode;
-
-typedef struct
-{
-    BlockedNode *first;
-    BlockedNode *last;
-    unsigned int qty;
-} BlockedQueueCDT;
-
-typedef BlockedQueueCDT *BlockedQueueADT;
-
 typedef struct Pipe
 {
     char data[PIPESIZE];
