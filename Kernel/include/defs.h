@@ -45,6 +45,11 @@ typedef struct pipeNode
     struct pipeNode *previous;
 } pipeNode;
 
+typedef struct PipeList {
+    pipeNode *head;
+    pipeNode *tail;
+} PipeList;
+
 typedef pipeNode *pipeList;
 
 #endif
