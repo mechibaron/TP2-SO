@@ -7,6 +7,7 @@
 #include <string.h>
 #include <strings.h>
 #include <ctype.h>
+#include <stddef.h>
 
 /* Global defines */
 struct BMFSEntry

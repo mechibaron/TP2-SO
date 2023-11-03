@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <stddef.h>
 #include "scheduler.h"
+#include "../include/interrupts.h"
 #include "../include/memoryManager.h"
 #include "../include/lib.h"
 #include "../include/queue.h"

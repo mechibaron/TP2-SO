@@ -1,37 +1,32 @@
-include Makefile.inc
+all:  bootloader kernel userland image
+buddy: bootloader kernel_buddy userland image
 
-KERNEL=kernel.bin
-SOURCES=$(wildcard *.c)
-SOURCES_INTERRUPTIONS=$(wildcard interruptions/*.c)
-SOURCES_INTERRUPTIONS_ASM=$(wildcard interruptions/*.asm)
-SOURCES_ASM=$(wildcard asm/*.asm)
-OBJECTS=$(SOURCES:.c=.o)
-OBJECTS_INTERRUPTIONS=$(SOURCES_INTERRUPTIONS:.c=.o)
-OBJECTS_INTERRUPTIONS_ASM=$(SOURCES_INTERRUPTIONS_ASM:.asm=.o)
-OBJECTS_ASM=$(SOURCES_ASM:.asm=.o)
-LOADERSRC=loader.asm
+bootloader:
+	cd Bootloader; make all
 
-LOADEROBJECT=$(LOADERSRC:.asm=.o)
-STATICLIBS=
+kernel:
+	cd Kernel; make all
 
-ALL_OBJECTS= $(LOADEROBJECT) $(OBJECTS) $(OBJECTS_ASM) $(OBJECTS_INTERRUPTIONS) $(OBJECTS_INTERRUPTIONS_ASM)
+kernel_buddy:
+	cd Kernel; make buddy
 
-all: $(KERNEL)
+userland:
+	cd Userland; make all
 
-$(KERNEL): $(STATICLIBS) $(ALL_OBJECTS)
-	$(LD) $(LDFLAGS) -T kernel.ld -o $@ $^
-	$(LD) $(LDFLAGS) -T kernel.ld -o kernel.elf --oformat=elf64-x86-64 $^
-
-%.o: %.c
-	$(GCC) $(GCCFLAGS) -I./include -I./interruptions -c $< -o $@
-
-%.o : %.asm
-	$(ASM) $(ASMFLAGS) $< -o $@
-
-$(LOADEROBJECT):
-	$(ASM) $(ASMFLAGS) $(LOADERSRC) -o $(LOADEROBJECT)
+image: kernel bootloader userland
+	cd Image; make all
 
 clean:
-	rm -rf $(ALL_OBJECTS) *.bin
+	cd Bootloader; make clean
+	cd Image; make clean
+	cd Kernel; make clean
+	cd Userland; make clean
+	rm -rf cppcheck.txt PVS-Studio.log report.tasks strace_out
 
-.PHONY: all clean
+static_analysis:
+	cppcheck --quiet --enable=all --force --inconclusive . 2> cppcheck.txt
+	pvs-studio-analyzer trace -- make
+	pvs-studio-analyzer analyze
+	plog-converter -a '64:1,2,3;GA:1,2,3;OP:1,2,3' -t tasklist -o report.tasks PVS-Studio.log
+
+.PHONY: bootloader image collections kernel userland all clean

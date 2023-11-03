@@ -2,6 +2,8 @@
     "files.associations": {
         "scheduler.h": "c",
         "stdint.h": "c",
-        "random": "c"
+        "random": "c",
+        "defs.h": "c",
+        "lib.h": "c"
     }
 }
