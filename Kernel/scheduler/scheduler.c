@@ -1,10 +1,13 @@
+#include <stdint.h>
+#include <stdio.h>
+#include <stddef.h>
 #include "scheduler.h"
-#include "../include/lib.h"
-#include "../include/interrupts.h" 
 #include "../include/memoryManager.h"
+#include "../include/lib.h"
 #include "../include/queue.h"
 #include "../include/pipe.h"
 #include "../include/defs.h"
+
 
 
 extern uint64_t loadProcess(uint64_t rip, uint64_t rsp, uint64_t argc, uint64_t argv); // implement on assembler
@@ -26,7 +29,7 @@ Queue expired = NULL;
 // Schelduler states
 int processAmount = -1;
 unsigned int processReadyCount = 0;
-pid_t dummyProcessPid = NULL;
+pid_t dummyProcessPid = 1;
 char proccessBeingRun = 0;
 int readyProcessAmount = 0;
 

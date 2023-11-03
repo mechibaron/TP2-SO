@@ -8,7 +8,7 @@
 #include <stdint.h>
 #include "queue.h"
 
-#define NULL ((void *)0)
+// #define NULL ((void *)0)
 
 /* Flags para derechos de acceso de los segmentos */
 #define ACS_PRESENT     0x80            /* segmento presente en memoria */
