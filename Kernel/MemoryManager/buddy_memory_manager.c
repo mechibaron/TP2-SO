@@ -118,37 +118,5 @@ MemoryInfo *mem_info() {
     return info;
 }
 
-int main() {
-// Crear memoria y asignar bloques
-createMemory(MEMORY_SIZE);
-void *ptr1 = memoryManagerAlloc(128);
-void *ptr2 = memoryManagerAlloc(256);
-void *ptr3 = memoryManagerAlloc(64);
-
-// Consultar el estado de la memoria antes de liberar
-MemoryInfo *info = mem_info();
-printf("Memory Algorithm: %s\n", info->memoryAlgorithmName);
-printf("Total Memory: %lu\n", info->totalMemory);
-printf("Used Memory: %lu\n", info->occupiedMemory);
-printf("Free Memory: %lu\n", info->freeMemory);
-printf("Blocks Used: %u\n", info->blocksUsed);
-
-// Liberar memoria
-memory_manager_free(ptr2);
-memory_manager_free(ptr1);
-
-// Consultar el estado de la memoria después de liberar
-info = mem_info();
-printf("Memory Algorithm: %s\n", info->memoryAlgorithmName);
-printf("Total Memory: %lu\n", info->totalMemory);
-printf("Used Memory: %lu\n", info->occupiedMemory);
-printf("Free Memory: %lu\n", info->freeMemory);
-printf("Blocks Used: %u\n", info->blocksUsed);
-
-// Liberar la estructura MemoryInfo
-free(info);
-
-return 0;
-}
 
 #endif

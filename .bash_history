@@ -29,3 +29,11 @@ git add ..
 git add .
 git commit -m "small changes"
 exit
+cd root/
+cd Toolchain/
+make all
+cd ..
+make all
+clear
+extir
+exit
