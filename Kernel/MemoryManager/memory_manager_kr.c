@@ -110,7 +110,7 @@ void free_memory_manager(void* block_blocked) {
 }
 
 MemoryInfo* mem_info() {
-    MemoryInfo* info = (MemoryInfo*)malloc(sizeof(MemoryInfo));
+    MemoryInfo* info = (MemoryInfo*)memory_manager_malloc(sizeof(MemoryInfo));
     if (info != NULL) {
         info->memoryAlgorithmName = MEMORY_MANAGER_NAME;
         info->totalMemory = total_heap_size * sizeof(header);
