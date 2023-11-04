@@ -10,6 +10,7 @@
         "stddef.h": "c",
         "lib.h": "c",
         "moduleloader.h": "c",
-        "graphicmode.h": "c"
+        "graphicmode.h": "c",
+        "memorymanager.h": "c"
     }
 }

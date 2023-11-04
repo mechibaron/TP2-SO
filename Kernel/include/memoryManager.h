@@ -8,11 +8,12 @@ typedef struct memoryInfo
     size_t freeMemory;
     size_t occupiedMemory;
     size_t totalMemory;
+    unsigned int blocksUsed;
 } MemoryInfo;
 
 void createMemory(size_t size);
-void *memoryManagerAlloc(size_t nbytes);
-void memory_manager_free(void *ap);
+void *memory_manager_malloc(size_t nbytes);
+void free_memory_manager(void *ap);
 MemoryInfo *mem_info();
 
 #endif

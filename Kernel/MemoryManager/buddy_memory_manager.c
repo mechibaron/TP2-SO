@@ -4,8 +4,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#define MEMORY_SIZE 1024
+#define MEMORY_SIZE (8 * 1024)
 #define MIN_ALLOCATION 32
+#define START_ADDRESS 0xF00000
+#define MEMORY_MANAGEMENT_NAME "Buddy"
 
 // Estructura para representar un bloque de memoria
 typedef struct Block {
@@ -35,7 +37,7 @@ void split(Block *block, size_t size) {
 }
 
 // Asigna memoria
-void *memoryManagerAlloc(size_t nbytes) {
+void *memory_manager_malloc(size_t nbytes) {
     if (nbytes == 0 || nbytes > MEMORY_SIZE) {
         return NULL;
     }
@@ -52,7 +54,7 @@ void *memoryManagerAlloc(size_t nbytes) {
                 split(block, allocSize);
             }
             block->is_free = 0;
-            return (void *)(block + 1); // +1 para saltar la información de bloque
+            return (void *)(block + START_ADDRESS + 1); // +1 para saltar la información de bloque
         }
         block = block->next;
     }
@@ -74,12 +76,12 @@ void merge() {
 }
 
 // Libera memoria
-void memory_manager_free(void *ap) {
+void free_memory_manager(void *ap) {
     if (ap == NULL) {
         return;
     }
 
-    Block *block = (Block *)ap - 1;
+    Block *block = (Block *)ap - START_ADDRESS - 1;
     if (block->is_free) {
         return;
     }
