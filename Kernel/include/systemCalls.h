@@ -1,29 +1,29 @@
-
-#ifndef SYSTEMCALLS_H_
-#define SYSTEMCALLS_H_
+#ifndef SYSCALLS_H
+#define SYSCALLS_H
 
 #include <stdint.h>
+#include <naiveConsole.h>
+#include <lib.h>
+#include "keyboard.h"
+#include "../scheduler/scheduler.h"
+#include "inforeg.h"
+#include <defs.h>
 
-
-#define STDIN  0
+#define STDIN 0
 #define STDOUT 1
 #define STDERR 2
+#define PIPEOUT 3
+#define PIPEIN 4
 
-int sys_write(uint64_t fd, char * buffer, uint64_t size);
-int sys_read(uint64_t fd, char * buffer, uint64_t size);
-void sys_date(char * buffer);
-void sys_time(char * buffer);
-void sys_date(char * buffer);
-void sys_clearWindow();
-void sys_restartCursor();
-void sys_uniqueWindow();
-int sys_printmem(uint64_t * mem_address);
-void store_registers(uint64_t * start);
-void sys_infoReg();
-void sys_paint(uint8_t* color, uint32_t position);
-int sys_seconds_elapsed();
-int sys_miliseconds_elapsed();
-void sys_set_font(int fontNumber);
-int sys_get_font();
+void _syscallHandler(void);
 
-#endif /* SYSTEMCALLS_H_ */
+
+typedef struct
+{
+    uint8_t day, month, year;
+    uint8_t hours, minutes, seconds;
+} sysTime_t;
+
+uint64_t syscallDispatcher(uint64_t rdi, uint64_t rsi, uint64_t rdx, uint64_t rax, uint64_t *registers);
+
+#endif

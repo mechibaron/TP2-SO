@@ -11,14 +11,14 @@ GLOBAL _irq02Handler
 GLOBAL _irq03Handler	
 GLOBAL _irq04Handler
 GLOBAL _irq05Handler
-GLOBAL _exception0Handler
-GLOBAL _exception6Handler
+; GLOBAL _exception0Handler
+; GLOBAL _exception6Handler
 GLOBAL _sysCallHandler
 
 EXTERN irqDispatcher
 EXTERN sysCallDispatcher
 EXTERN print_registers
-EXTERN exceptionDispatcher
+; EXTERN exceptionDispatcher
 EXTERN load_registers
 EXTERN getStackBase
 
@@ -86,7 +86,7 @@ SECTION .text
 
     pushState
     mov rdi, %1
-    call exceptionDispatcher
+    ; call exceptionDispatcher
 
     popState
 
@@ -151,14 +151,14 @@ _irq05Handler:
 	irqHandlerMaster 5
 
 
-; Zero Division Exception
-_exception0Handler:
-	exceptionHandler 0
+; ; Zero Division Exception
+; _exception0Handler:
+; 	exceptionHandler 0
 
 
-; Invalid Operand Exception
-_exception6Handler:
-	exceptionHandler 6
+; ; Invalid Operand Exception
+; _exception6Handler:
+; 	exceptionHandler 6
 
 _sysCallHandler:
 	pushState

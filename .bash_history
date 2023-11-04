@@ -37,3 +37,84 @@ make all
 clear
 extir
 exit
+cd root
+cd toolchain
+make clean
+make all
+cd ..
+make clean
+make all
+make clean
+make all
+make clean
+make all
+make clean
+make all
+make clean
+make all
+clear
+make clean
+clear
+make all
+make clean
+clear
+make all
+make clean
+make all
+make clean
+clear
+make all
+make clean
+clear
+make all
+make clean
+clear
+make all
+make clean
+clear
+make all
+make clean
+clear
+make all
+make clean
+clear
+make all
+make clean
+clear
+make all
+make clean 
+clear
+make all
+make clean
+clear
+make all
+make clean
+clear
+make all 
+make clean
+clear
+make all
+make clean
+clear
+make all
+make clean
+clear
+make all
+make clean
+clear
+make all
+make clean
+clear
+make all
+make clean
+clear
+make all
+cd root
+cd toolchain
+make clean
+make all
+cd ..
+make clean
+clear
+make all
+exit

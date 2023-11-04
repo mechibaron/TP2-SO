@@ -1,187 +1,374 @@
-#include <stdint.h>
-#include <naiveConsole.h>
-#include <graphicMode.h>
-#include <systemCalls.h>
-#include <keyboard.h>
-#include <time.h>
-#include <RTClock.h>
+#include "systemCalls.h"
+#include "memoryManager.h"
+#include "scheduler.h"
+#include "semaphore.h"
+#include "pipe.h"
+#include "defs.h"
 
+static uint64_t sys_read(unsigned int fd, char *output, uint64_t count);
+static void sys_write(unsigned int fd, const char *buffer, uint64_t count);
+static pid_t sys_exec(uint64_t program, unsigned int argc, char *argv[]);
+static void sys_exit(int return_value, char autokill);
+static void sys_time(sysTime_t *s);
+static void sys_copymem(uint64_t address, uint8_t *buffer, uint64_t length);
+static MemoryInfo *sys_memInfo();
+static void *sys_memMalloc(uint64_t size);
+static void sys_memFree(uint64_t ap);
+static pid_t sys_waitpid(pid_t pid);
+static int sys_kill(pid_t pid);
+static int sys_block(pid_t pid);
+static int sys_unblock(pid_t pid);
+static sem_t sys_sem_open(char *name, uint64_t value);
+static int sys_sem_close(sem_t sem);
+static int sys_sem_post(sem_t sem);
+static int sys_sem_wait(sem_t sem);
+static int sys_yieldProcess();
+static int sys_nice(pid_t pid, int new_priority);
+static int sys_pipe(int pipefd[2]);
+static int sys_dup2(int fd1, int fd2);
+static int sys_open(int fd);
+static int sys_close(int fd);
+static processInfo *sys_ps();
+static int sys_changeProcessStatus(pid_t pid);
+static pid_t sys_getCurrentPid();
+static int sys_secondsElapsed();
+// AGREGAR SYSCALL EXIT QUE ES LLAMADA EN SCHEDULER.ASM
 
-int sys_write(uint64_t fd, char * buffer, uint64_t size) {
-    if (buffer == 0 || size == 0 || fd > 2){
-        return -1;
-    }
-
-    color_t col = ((fd == STDERR) ? RED : WHITE);
-    uint64_t i = 0;
-    while(i < size && buffer[i]){
-      printCharFormat(buffer[i++],&col, &BLACK);
-    }
-    return i;
-}
-
-int sys_read(uint64_t fd, char * buffer, uint64_t size) {
-    if (buffer == 0 || size == 0 || fd != 0){
-      return -1;
-    }
-    uint8_t i = 0;
-    int c;
-
-    while(i<size && ((c = getChar()) != -1)){
-      buffer[i++] = c;
-    }
-    return i;
-}
-
-void sys_date(char * buffer){
-    get_date(buffer);
-}
-
-void sys_time(char * buffer){
-    get_time(buffer);
-}
-
-
-void sys_clearWindow(){
-    clearAll();
-}
-
-void sys_restartCursor(){
-    restartCursor();
-}
-
-
-
-void sys_uniqueWindow(){
-    initUniqueWindow();
-}
-
-int sys_printmem(uint64_t * mem_address){
-    if((uint64_t) mem_address > (0x20000000 - 32)){
-      return -1;
-    }
-
-    uint8_t * aux = (uint8_t *) mem_address;
-    for(int i=0; i < 32 ; ++i){
-        printHex((uint64_t) aux);
-        print(" = ");
-        printHex(*aux);
-        newLine();
-        ++aux;
+uint64_t syscallDispatcher(uint64_t rdi, uint64_t rsi, uint64_t rdx, uint64_t rax, uint64_t *registers)
+{
+    switch (rax)
+    {
+    case 0:
+        return sys_read((unsigned int)rdi, (char *)rsi, rdx);
+        break;
+    case 1:
+        sys_write((unsigned int)rdi, (char *)rsi, rdx);
+        break;
+    case 2:
+        return (uint64_t)((uint64_t *)rdi);
+        break;
+    case 3:
+        return (uint64_t)sys_exec(rdi, (unsigned int)rsi, (char **)rdx);
+        break;
+    case 4:
+        sys_exit((int)rdi, 1);
+        break;
+    case 5:
+        sys_time((sysTime_t *)rdi);
+        break;
+    case 6:
+        sys_copymem(rdi, (uint8_t *)rsi, rdx);
+        break;
+    case 7:
+        return (uint64_t)sys_memInfo();
+        break;
+    case 8:
+        return (uint64_t)sys_memMalloc(rdi);
+        break;
+    case 9:
+        sys_memFree(rdi);
+        break;
+    case 10:
+        return sys_waitpid((pid_t)rdi);
+        break;
+    case 11:
+        return sys_kill((pid_t)rdi);
+        break;
+    case 12:
+        return sys_block((pid_t)rdi);
+        break;
+    case 13:
+        return sys_unblock((pid_t)rdi);
+        break;
+    case 14:
+        return (uint64_t)sys_sem_open((char *)rdi, (uint64_t)rsi);
+        break;
+    case 15:
+        return sys_sem_close((sem_t)rdi);
+        break;
+    case 16:
+        return sys_sem_post((sem_t)rdi);
+        break;
+    case 17:
+        return sys_sem_wait((sem_t)rdi);
+        break;
+    case 18:
+        (uint64_t) sys_yieldProcess();
+        break;
+    case 19:
+        return (uint64_t)sys_nice((pid_t)rdi, (int)rsi);
+        break;
+    case 20:
+        return (uint64_t)sys_pipe((int *)rdi);
+        break;
+    case 21:
+        return (uint64_t)sys_dup2((uint64_t)rdi, (uint64_t)rsi);
+        break;
+    case 22:
+        return sys_open((int)rdi);
+        break;
+    case 23:
+        return sys_close((int)rdi);
+        break;
+    case 24:
+        return (uint64_t)sys_ps();
+        break;
+    case 25:
+        return sys_changeProcessStatus((pid_t)rdi);
+        break;
+    case 26:
+        return sys_getCurrentPid();
+        break;
+    case 27:
+        return sys_secondsElapsed();
+        break;
     }
     return 0;
 }
 
+static uint64_t sys_read(unsigned int fd, char *output, uint64_t count)
+{
+    PCB *pcb = getProcess(getCurrentPid());
+    if (pcb->lastFd <= fd)
+        return 0;
 
-void sys_paint(uint8_t* color, uint32_t position){
-    ncPaint(color, position);
+    if (pcb->fileDescriptors[fd].mode == OPEN)
+    {
+        return readBuffer(output, count);
+    }
+    if (pcb->fileDescriptors[PIPEOUT].mode == OPEN)
+    {
+        return pipeRead(pcb->pipe, output, count);
+    }
+    return 0;
 }
 
-
-static char store[900];
-void store_registers(uint64_t * start){
-
-  char * reg_text[] = {"RAX: 0x", "R15: 0x", "R14: 0x", "R13: 0x", "R12: 0x", "R11: 0x", "R10: 0x", "R9:  0x",
-                       "R8:  0x", "RSI: 0x", "RDI: 0x", "RBP: 0x", "RDX: 0x", "RCX: 0x", "RBX: 0x", "RSP: 0x", 0};
-  uint32_t j = 0; //store counter
-
-  for(int i=0 ; reg_text[i] ; ++i){
-    //Agregamos el string al store
-    int m = 0;
-    while(reg_text[i][m]){
-      store[j++] = reg_text[i][m++];
+static void sys_write(unsigned int fd, const char *buffer, uint64_t count)
+{
+    PCB *pcb = getProcess(getCurrentPid());
+    if (pcb->lastFd < fd)
+        return;
+    if (pcb->fileDescriptors[fd].mode == OPEN)
+    {
+        uint64_t i = 0;
+        while (i < count)
+        {
+            switch (fd)
+            {
+            case STDOUT:
+                ncPrintChar(buffer[i]);
+                break;
+            case STDERR:
+                ncPrintCharFormat(buffer[i], ERROR_FORMAT);
+                break;
+            }
+            i++;
+        }
     }
-
-    //Agregamos el nro al store
-    uint64_t aux = start[i];
-    int64_t count =  16;
-    while(aux){
-        aux = aux >> 4;
-        --count;
+    else if (pcb->fileDescriptors[PIPEIN].mode == OPEN)
+    {
+        pipeWrite(pcb->pipe, buffer, count);
     }
-
-    for(int k=0; k < count ;k++){
-       store[j++] = '0';
-    }
-
-    if(start[i]){
-      j += uintToBase(start[i], store+j, 16);
-    }
-    store[j++] = '\n';
-  }
-  store[j] = 0;
+    return;
 }
 
-void sys_infoReg(){
-  if(!store[0]){
-    print("Debes presionar '-' para guardar el estado de los registros en un momento especifico \n");
-  }
-  print(store);
+static pid_t sys_exec(uint64_t program, unsigned int argc, char *argv[])
+{
+    return createProcess(program, argc, argv);
 }
 
-int sys_seconds_elapsed(){
+static void sys_exit(int return_value, char autokill)
+{
+    PCB *pcb = getProcess(getCurrentPid());
+    unsigned int lastFd = pcb->lastFd;
+
+    for (int i = 0; i < lastFd; i++)
+    {
+        sys_close(i);
+    }
+
+    killProcess(return_value, autokill);
+}
+
+static void sys_time(sysTime_t *s)
+{
+    s->day = localDay();
+    s->month = localMonth();
+    s->year = localYear();
+    s->hours = localHours();
+    s->minutes = getMinutes();
+    s->seconds = getSeconds();
+}
+
+static void sys_copymem(uint64_t address, uint8_t *buffer, uint64_t length)
+{
+    memcpy((void *)buffer, (void *)address, length);
+}
+
+static MemoryInfo *sys_memInfo()
+{
+    return mem_info();
+}
+
+static void *sys_memMalloc(uint64_t size)
+{
+    return memoryManagerAlloc(size);
+}
+
+static void sys_memFree(uint64_t ap)
+{
+    memoryManagerFreefree((void *)ap);
+}
+
+static pid_t sys_waitpid(pid_t pid)
+{
+    PCB *processPcb = getProcess(pid);
+    if (processPcb == NULL)
+    {
+        return -1;
+    }
+
+    pid_t currentPid = getCurrentPid();
+    enqueuePid(processPcb->blockedQueue, currentPid);
+    blockProcess(currentPid);
+
+    return pid;
+}
+
+static int sys_kill(pid_t pid)
+{
+    if (pid <= 0)
+    {
+        return -1;
+    }
+
+    int x = preparePlaceholderProcess(pid);
+    if (x == -1)
+    {
+        return -1;
+    }
+
+    sys_exit(0, 0);
+    return 0;
+}
+
+static int sys_block(pid_t pid)
+{
+    if (pid <= 0)
+    {
+        return -1;
+    }
+    return blockProcess(pid);
+}
+
+static int sys_unblock(pid_t pid)
+{
+    if (pid <= 0)
+    {
+        return -1;
+    }
+    return unblockProcess(pid);
+}
+
+static sem_t sys_sem_open(char *name, uint64_t value)
+{
+    return sem_open(name, value);
+}
+static int sys_sem_close(sem_t sem)
+{
+    return sem_close(sem);
+}
+static int sys_sem_post(sem_t sem)
+{
+    return sem_post(sem);
+}
+static int sys_sem_wait(sem_t sem)
+{
+    return sem_wait(sem);
+}
+
+static int sys_yieldProcess()
+{
+    return yieldProcess();
+}
+
+static int sys_nice(pid_t pid, int newPriority)
+{
+    if (pid <= 0)
+    {
+        return -1;
+    }
+
+    return changePriority(pid, newPriority);
+}
+
+static int sys_pipe(int pipefd[2])
+{
+    PCB *pcb = getProcess(getCurrentPid());
+    pcb->fileDescriptors[PIPEIN].mode = OPEN;
+    pcb->fileDescriptors[PIPEOUT].mode = OPEN;
+    pcb->pipe = pipeOpen();
+    pipefd[0] = PIPEIN;
+    pipefd[1] = PIPEOUT;
+    return 0;
+}
+
+static int sys_dup2(int fd1, int fd2)
+{
+    PCB *pcb = getProcess(getCurrentPid());
+    if (fd1 > pcb->lastFd || fd2 > pcb->lastFd || pcb->fileDescriptors[fd2].mode == CLOSED)
+        return 0;
+    pcb->fileDescriptors[fd1] = pcb->fileDescriptors[fd2];
+    return 1;
+}
+static int sys_open(int fd)
+{
+    PCB *pcb = getProcess(getCurrentPid());
+    if (pcb->lastFd < fd)
+        return 0;
+    pcb->fileDescriptors[fd].mode = OPEN;
+    return 1;
+}
+static int sys_close(int fd)
+{
+    PCB *pcb = getProcess(getCurrentPid());
+    if (pcb->lastFd < fd)
+        return 0;
+    pcb->fileDescriptors[fd].mode = CLOSED;
+    return 1;
+}
+
+static processInfo *sys_ps()
+{
+    return getProccessesInfo();
+}
+
+// Returns READY if unblocked, BLOCKED if blocked, -1 if failed
+static int sys_changeProcessStatus(pid_t pid)
+{
+    PCB *process = getProcess(pid);
+    if (process == NULL)
+    {
+        return -1;
+    }
+    if (process->status == READY)
+    {
+        sys_block(pid);
+        return BLOCKED;
+    }
+    else
+    {
+        sys_unblock(pid);
+        return READY;
+    }
+}
+
+static pid_t sys_getCurrentPid()
+{
+    return getCurrentPid();
+}
+
+static int sys_secondsElapsed()
+{
     return seconds_elapsed();
-  }
-int sys_miliseconds_elapsed(){
-    return miliseconds_elapsed();
-  }
-
-void sys_set_font(int fontNumber){
-    clearAll();
-    global_font = fontNumber;
-}
-
-int sys_get_font(){
-  return global_font;
-}
-
-int sysCallDispatcher(uint64_t rdi, uint64_t rsi, uint64_t rdx, uint64_t r10, uint64_t r8) {
-  switch(r8){
-      case 0:
-        return sys_read(rdi, (char *)rsi, rdx);
-
-      case 1:
-        return sys_write(rdi, (char *)rsi, rdx);
-
-      case 2:
-        get_time((char *)rdi);
-        return 0;
-
-      case 3:
-        sys_clearWindow();
-        return 0;
-
-      case 4:
-        sys_restartCursor();
-        return 0;
-
-      case 5:
-        sys_uniqueWindow();
-        return 0;
-
-      case 6:
-        return sys_printmem((uint64_t *) rdi);
-
-      case 7:
-        sys_date((char *)rdi);
-        return 0;
-
-      case 8:
-        sys_infoReg();
-        return 0;
-      case 9:
-        sys_paint((uint8_t*) rdi, (uint32_t) rsi);
-        return 0;
-      case 10:
-        return sys_seconds_elapsed();
-      case 11:
-        return sys_miliseconds_elapsed();
-      case 12:
-        sys_set_font((int) rdi);
-        return 0;
-      case 13:
-        return sys_get_font();
-
-  }
-  return -1;
 }

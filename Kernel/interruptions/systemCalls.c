@@ -4,20 +4,18 @@
 #include <systemCalls.h>
 #include <keyboard.h>
 #include <time.h>
-#include <RTClock.h>
-
 
 int sys_write(uint64_t fd, char * buffer, uint64_t size) {
     if (buffer == 0 || size == 0 || fd > 2){
         return -1;
     }
 
-    color_t col = ((fd == STDERR) ? RED : WHITE);
-    uint64_t i = 0;
-    while(i < size && buffer[i]){
-      printCharFormat(buffer[i++],&col, &BLACK);
-    }
-    return i;
+    // color_t col = ((fd == STDERR) ? RED : WHITE);
+    // uint64_t i = 0;
+    // while(i < size && buffer[i]){
+    //   printCharFormat(buffer[i++],&col, &BLACK);
+    // }
+    // return i;
 }
 
 int sys_read(uint64_t fd, char * buffer, uint64_t size) {
@@ -126,14 +124,14 @@ int sys_miliseconds_elapsed(){
     return miliseconds_elapsed();
   }
 
-void sys_set_font(int fontNumber){
-    clearAll();
-    global_font = fontNumber;
-}
+// void sys_set_font(int fontNumber){
+//     clearAll();
+//     global_font = fontNumber;
+// }
 
-int sys_get_font(){
-  return global_font;
-}
+// int sys_get_font(){
+//   return global_font;
+// }
 
 int sysCallDispatcher(uint64_t rdi, uint64_t rsi, uint64_t rdx, uint64_t r10, uint64_t r8) {
   switch(r8){
@@ -176,11 +174,11 @@ int sysCallDispatcher(uint64_t rdi, uint64_t rsi, uint64_t rdx, uint64_t r10, ui
         return sys_seconds_elapsed();
       case 11:
         return sys_miliseconds_elapsed();
-      case 12:
-        sys_set_font((int) rdi);
-        return 0;
-      case 13:
-        return sys_get_font();
+      // case 12:
+      //   sys_set_font((int) rdi);
+      //   return 0;
+      // case 13:
+      //   return sys_get_font();
 
   }
   return -1;

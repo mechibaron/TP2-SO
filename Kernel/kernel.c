@@ -5,6 +5,7 @@
 #include <naiveConsole.h>
 #include <graphicMode.h>
 #include <idtLoader.h>
+#include <stddef.h>
 
 extern uint8_t text;
 extern uint8_t rodata;
@@ -82,33 +83,14 @@ void * initializeKernelBinary()
 	return getStackBase();
 }
 
-int main()
-{
+int main(){
+	_cli();
+	ncClear();
 	load_idt();
-	clearAll();
-	initUniqueWindow();
-	
-	//ncNewline();
-
-	//ncNewline();
-	//ncPrint("  Sample code module at 0x");
-	//ncPrintHex((uint64_t)sampleCodeModuleAddress);
-	//ncNewline();
-	//ncPrint(" Calling the sample code module returned: ");
-	//ncPrintHex(((EntryPoint)sampleCodeModuleAddress)());
-
-	((EntryPoint)sampleCodeModuleAddress)();
-	
-	//ncNewline();
-
-	//ncPrint("  Sample data module at 0x");
-	//ncPrintHex((uint64_t)sampleDataModuleAddress);
-	//ncNewline();
-	//ncPrint("  Sample data module contents: ");
-	//ncPrint((char*)sampleDataModuleAddress);
-	//ncNewline();
-
-	//ncPrint("[Finished]");
-	
+	createMemory(0x2000000 - 0x1000000);
+	createScheduler();
+	createProcess(sampleCodeModuleAddress, 0, NULL);
+	_sti();
+	_hlt();
 	return 0;
 }

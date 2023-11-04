@@ -4,6 +4,7 @@
         "stdint.h": "c",
         "random": "c",
         "defs.h": "c",
-        "lib.h": "c"
+        "lib.h": "c",
+        "idtloader.h": "c"
     }
 }
