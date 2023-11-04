@@ -1,6 +1,7 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <stddef.h>
+#include <stdlib.h>
 #include "scheduler.h"
 #include "../include/interrupts.h"
 #include "../include/memoryManager.h"
@@ -67,7 +68,7 @@ void initializeProcess(Process *process, char *name){
 
 void createScheduler() {
     char *name = "Kernel Task";
-    Process *activeProcess = (Process *)malloc(sizeof(Process));
+    Process *activeProcess = createProcess((uint32_t)dummyProcess, 0, NULL);
     initializeProcess(activeProcess, name);
     
     // Incremento el contador de procesos listos.
@@ -163,12 +164,12 @@ int unblockProcess(pid_t pid) {
 }
 
 char **copy_argv(int argc, char **argv) {
-    char **new_argv = memoryManagerAlloc(sizeof(char *) * argc);
+    char **new_argv = memory_manager_malloc(sizeof(char *) * argc);
 
     for (int i = 0; i < argc; i++) {
         int length = strlen(argv[i]);
         //asigna memoria para la nueva cadena
-        new_argv[i] = memoryManagerAlloc(length + 1); 
+        new_argv[i] = memory_manager_malloc(length + 1); 
         //copiamos la cadena original a la nueva ubicacion
         strcpy(new_argv[i], argv[i]); 
     }
@@ -178,7 +179,7 @@ char **copy_argv(int argc, char **argv) {
 
 
 pid_t createProcess(uint64_t rip, int argc, char *argv[]) {
-    Node *newProcess = memoryManagerAlloc(sizeof(Node));
+    Node *newProcess = memory_manager_malloc(sizeof(Node));
     newProcess->process.pid = processAmount++;
     newProcess->process.priority = DEFAULT_PRIORITY;
     newProcess->process.quantumsLeft = priorities[DEFAULT_PRIORITY];
@@ -198,7 +199,7 @@ pid_t createProcess(uint64_t rip, int argc, char *argv[]) {
         newProcess->process.pipe = active->process.pipe;
     }
 
-    uint64_t rsp = (uint64_t)memoryManagerAlloc(4 * 1024);
+    uint64_t rsp = (uint64_t)memory_manager_malloc(4 * 1024);
     if (rsp == 0) {
         return -1;
     }
@@ -206,7 +207,7 @@ pid_t createProcess(uint64_t rip, int argc, char *argv[]) {
     uint64_t newRsp = (uint64_t)loadProcess(rip, rsp + 4 * 1024, newProcess->process.argc, (uint64_t)newProcess->process.argv);
     newProcess->process.rsp = newRsp;
 
-    Node *newProcessNode = memoryManagerAlloc(sizeof(Node));
+    Node *newProcessNode = memory_manager_malloc(sizeof(Node));
     newProcessNode->process = newProcess->process;
     newProcessNode->next = NULL;
 
@@ -419,22 +420,22 @@ int killProcess(int returnValue, char autokill) {
 
     // Liberar la memoria utilizada por los argumentos
     for (int i = 0; i < currentProcess->process.argc; i++) {
-        memory_manager_free(currentProcess->process.argv[i]);
+        free_memory_manager(currentProcess->process.argv[i]);
     }
-    memory_manager_free(currentProcess->process.argv);
+    free_memory_manager(currentProcess->process.argv);
 
     // Liberar la cola bloqueada y la memoria de la pila
     freeQueue(currentProcess->process.blockedQueue);
-    memory_manager_free((void *)currentProcess->process.stackBase);
+    free_memory_manager((void *)currentProcess->process.stackBase);
 
     // Si existe una tubería, escribir un mensaje EOF
     if (currentProcess->process.pipe != NULL) {
         char msg[1] = {EOF};
-        pipeWrite(currentProcess->process.pipe, msg, 1);
+        pipeWriteData(currentProcess->process.pipe, msg, 1);
     }
 
     // Liberar la memoria utilizada por el proceso
-    memory_manager_free(currentProcess);
+    free_memory_manager(currentProcess);
 
     if (autokill) {
         proccessBeingRun = 0;
@@ -473,7 +474,7 @@ int yieldProcess() {
 }
 
 processInfo *addProcessInfoNode(processInfo *current, PCB process) {
-    processInfo *newNode = (processInfo *)memoryManagerAlloc(sizeof(processInfo));
+    processInfo *newNode = (processInfo *)memory_manager_malloc(sizeof(processInfo));
     newNode->pid = process.pid;
     newNode->priority = process.priority;
     newNode->stackBase = process.stackBase;

@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stddef.h>
 #include <stdbool.h>
 
 // Tamaño máximo de la memoria

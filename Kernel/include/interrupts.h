@@ -26,6 +26,7 @@ void _sti(void);
 void _hlt(void);
 void picMasterMask(uint8_t mask);
 void picSlaveMask(uint8_t mask);
+void _int20();
 
 //Termina la ejecución de la cpu.
 void haltcpu(void);

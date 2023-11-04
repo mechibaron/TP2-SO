@@ -7,14 +7,14 @@ pipeList pipesList = NULL;
 Pipe *pipeOpen()
 {
     //incluimos en el newpipe las variables de pipe e inicializamos
-    Pipe *newPipe = (Pipe *)memoryManagerAlloc(sizeof(Pipe));
+    Pipe *newPipe = (Pipe *)memory_manager_malloc(sizeof(Pipe));
     newPipe->isReadOpen = 1;
     newPipe->isWriteOpen = 1;
     newPipe->readQueue = newQueue();
     newPipe->writeQueue = newQueue();
     newPipe->processCount = 1;
 
-    pipeNode *newPipeNode = (pipeNode *)memoryManagerAlloc(sizeof(pipeNode));
+    pipeNode *newPipeNode = (pipeNode *)memory_manager_malloc(sizeof(pipeNode));
     newPipeNode->pipe = newPipe;
     newPipeNode->next = pipesList;
     newPipeNode->previous = NULL;
@@ -46,8 +46,8 @@ void cleanupAndRemovePipe(pipeNode *node) {
         node->previous->next = node->next;
     }
 
-    memory_manager_free(node);
-    memory_manager_free(node->pipe);
+    free_memory_manager(node);
+    free_memory_manager(node->pipe);
 }
 
 

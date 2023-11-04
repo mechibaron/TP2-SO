@@ -60,7 +60,7 @@ unsigned int strlen(const char *str) {
 
 char * strcpy(const char * str) {
 	unsigned int len = strlen(str);
-	char * new_str = memoryManagerAlloc(len+1);
+	char * new_str = memory_manager_malloc(len+1);
 	if (new_str != NULL) {
 		memcpy(new_str, str, len+1);
 	}

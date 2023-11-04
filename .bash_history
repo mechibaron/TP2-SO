@@ -118,3 +118,81 @@ make clean
 clear
 make all
 exit
+cd root
+make clean
+clear
+make all
+exxit
+git  pull
+exit
+cd root
+cd Toolchain 
+make clean
+make all
+cd ..
+make clean 
+clear
+make all
+make clean 
+clear
+make all
+make clean 
+clear
+make buddy 
+make clean 
+clear
+make all 
+make clean 
+clear
+make all 
+make clean 
+clear
+make all
+make clean 
+clear
+make all
+make clean 
+clear
+make all
+make clean 
+clear
+make all
+make clean 
+clear
+make all
+make clean 
+make clen 
+make clean 
+clear
+make all
+make clean 
+clear
+make all
+clear
+make all
+cler
+make clean 
+clear
+make all
+make clean 
+clear
+make all
+make clean 
+clear
+make all
+make clean 
+clear
+make all
+MAKE CLEAN 
+make clean 
+clear
+make all
+make clean 
+clear
+make all
+make clean 
+clear
+make all
+make clean 
+git add .
+exit

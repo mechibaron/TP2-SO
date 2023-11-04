@@ -1,9 +1,9 @@
 #include "../include/queue.h"
-
+#include <stddef.h>
 
 //funcion para la nueva queue de bloqueados
 BlockedQueueADT newQueue() {
-    BlockedQueueADT queue = memoryManagerAlloc(sizeof(BlockedQueueCDT));
+    BlockedQueueADT queue = memory_manager_malloc(sizeof(BlockedQueueCDT));
     if (queue != NULL) {
         queue->head = NULL;
         queue->tail = NULL;
@@ -22,7 +22,7 @@ pid_t dequeuePid(BlockedQueueADT queue) {
     //actualizamos el puntero
     queue->head = node->next;
     pid_t pid = node->pid;
-    memory_manager_free(node);
+    free_memory_manager(node);
     queue->size--;
     if (queue->head == NULL) {
         queue->tail = NULL;
@@ -35,7 +35,7 @@ void enqueuePid(BlockedQueueADT queue, pid_t pid) {
     if (queue == NULL) {
         return;
     }
-    blockednode *newNode = memoryManagerAlloc(sizeof(blockednode));
+    blockednode *newNode = memory_manager_malloc(sizeof(blockednode));
     if (newNode == NULL) {
         return;
     }
@@ -59,7 +59,7 @@ void freeQueue(BlockedQueueADT queue) {
     while (queue->head != NULL) {
         blockednode *node = queue->head;
         queue->head = node->next;
-        memory_manager_free(node);
+        free_memory_manager(node);
     }
-    memory_manager_free(queue);
+    free_memory_manager(queue);
 }
