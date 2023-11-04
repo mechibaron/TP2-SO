@@ -1,5 +1,4 @@
 #include "../include/queue.h"
-#include "../include/defs.h"
 
 
 //funcion para la nueva queue de bloqueados

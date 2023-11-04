@@ -1,10 +1,15 @@
 {
     "files.associations": {
-        "scheduler.h": "c",
-        "stdint.h": "c",
-        "random": "c",
         "defs.h": "c",
+        "stdint.h": "c",
+        "idtloader.h": "c",
+        "interrupts.h": "c",
+        "systemcalls.h": "c",
+        "scheduler.h": "c",
+        "naiveconsole.h": "c",
+        "stddef.h": "c",
         "lib.h": "c",
-        "idtloader.h": "c"
+        "moduleloader.h": "c",
+        "graphicmode.h": "c"
     }
 }

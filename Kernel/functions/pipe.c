@@ -1,7 +1,4 @@
 
-// #include <memoryManager.h>
-// #include <queue.h>
-#include "../scheduler/scheduler.h"
 #include "../include/pipe.h"
 
 pipeList pipesList = NULL;
@@ -23,26 +20,6 @@ Pipe *pipeOpen()
     newPipeNode->previous = NULL;
     pipesList = newPipeNode;
     return newPipe;
-}
-
-// TODO tengo que ver como liberar las queues
-int pipeClose(Pipe *pipe) {
-    // Decrement the process count, if greater than 1
-    if (pipe->processCount > 1) {
-        pipe->processCount--;
-    }
-
-    // Encontramos el pipe en la lista
-    pipeNode *current = findPipeInList(pipe);
-    
-    if (current == NULL) {
-        return 0; 
-    }
-
-    // Limpiamos el pipe
-    cleanupAndRemovePipe(current);
-
-    return 1;
 }
 
 pipeNode *findPipeInList(Pipe *pipe) {
@@ -74,6 +51,25 @@ void cleanupAndRemovePipe(pipeNode *node) {
 }
 
 
+// TODO tengo que ver como liberar las queues
+int pipeClose(Pipe *pipe) {
+    // Decrement the process count, if greater than 1
+    if (pipe->processCount > 1) {
+        pipe->processCount--;
+    }
+
+    // Encontramos el pipe en la lista
+    pipeNode *current = findPipeInList(pipe);
+    
+    if (current == NULL) {
+        return 0; 
+    }
+
+    // Limpiamos el pipe
+    cleanupAndRemovePipe(current);
+
+    return 1;
+}
 
 //devuelve la cantidad de chars leidos y sino -1
 int pipeReadData(Pipe *pipe, char *msg, int size) {

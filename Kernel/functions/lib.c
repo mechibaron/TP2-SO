@@ -1,8 +1,6 @@
 #include <stdint.h>
-#include <stdio.h>
 #include <stddef.h>
-#include "../include/memoryManager.h"
-#include "lib.h"
+#include "../include/lib.h"
 
 void * memset(void * destination, int32_t c, uint64_t length)
 {

@@ -1,7 +1,6 @@
 #ifndef QUEUE_H
 #define QUEUE_H
 
-#include "defs.h"
 #include "../include/memoryManager.h"
 
 typedef int pid_t;
