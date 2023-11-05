@@ -1,9 +1,8 @@
 #include "systemCalls.h"
 #include "memoryManager.h"
 #include "scheduler.h"
-#include "semaphore.h"
+// #include <semaphore.h>
 #include "pipe.h"
-#include "naiveConsole.h"
 #include "defs.h"
 
 static uint64_t sys_read(unsigned int fd, char *output, uint64_t count);

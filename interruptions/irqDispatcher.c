@@ -1,26 +1,24 @@
-#include <time.h>
-#include <stdint.h>
-#include <keyboard.h>
+#include "irqDispatcher.h"
+#include "time.h"
+#include "keyboard.h"
 
-static void int_20();
-static void int_21();
+static void int_20(uint64_t *registers);
+static void int_21(uint64_t *registers);
 
-typedef void (*void_function)(void);
+static void (*irq_handlers[])(uint64_t *) = {int_20, int_21};
 
-static void_function interruptions[255] = {&int_20, &int_21};
-
-void int_20() {
-    timer_handler();
+void irqDispatcher(uint64_t irq, uint64_t *registers)
+{
+	(*irq_handlers[irq])(registers);
+	return;
 }
 
-void int_21() {
-    keyboard_handler();
+static void int_20(uint64_t *registers)
+{
+	timer_handler(registers);
 }
 
-void irqDispatcher(uint64_t irq) {
-    void_function interruption = interruptions[irq];
-    if (interruption != 0){
-        interruption();
-    }
-    return;
+static void int_21(uint64_t *registers)
+{
+	keyboard_handler(registers);
 }

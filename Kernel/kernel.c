@@ -38,15 +38,6 @@ void * getStackBase()
 
 void * initializeKernelBinary()
 {
-	//ncPrint("[x64BareBones]");
-	//ncNewline();
-
-	//ncPrint("CPU Vendor:");
-	//ncPrint(cpuVendor(buffer));
-	//ncNewline();
-
-	//ncPrint("[Loading modules]");
-	//ncNewline();
 
 	void * moduleAddresses[] = {
 		sampleCodeModuleAddress,
@@ -55,32 +46,7 @@ void * initializeKernelBinary()
 
 	loadModules(&endOfKernelBinary, moduleAddresses);
 
-	//ncPrint("[Done]");
-	//ncNewline();
-	//ncNewline();
-
-	//ncPrint("[Initializing kernel's binary]");
-	//ncNewline();
-
 	clearBSS(&bss, &endOfKernel - &bss);
-
-	//ncPrint("  text: 0x");
-	//ncPrintHex((uint64_t)&text);
-	//ncNewline();
-	//ncPrint("  rodata: 0x");
-	//ncPrintHex((uint64_t)&rodata);
-	//ncNewline();
-	//ncPrint("  data: 0x");
-	//ncPrintHex((uint64_t)&data);
-	//ncNewline();
-	//ncPrint("  bss: 0x");
-	//ncPrintHex((uint64_t)&bss);
-	//ncNewline();
-
-	//ncPrint("[Done]");
-	//ncNewline();
-	//ncNewline();
-	
 	return getStackBase();
 }
 

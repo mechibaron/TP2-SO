@@ -1,6 +1,4 @@
-/***************************************************
-  Defs.h
-****************************************************/
+
 
 #ifndef _defs_
 #define _defs_
@@ -25,7 +23,19 @@
 #define ACS_DATA        (ACS_PRESENT | ACS_DSEG | ACS_WRITE)
 #define ACS_STACK       (ACS_PRESENT | ACS_DSEG | ACS_WRITE)
 
+/* Registros en memoria en las syscalls */
+#define REG_AMOUNT 15
+#define RIP_POS REG_AMOUNT
+#define RFLAGS_POS (REG_AMOUNT + 2)
+#define RSP_POS (REG_AMOUNT + 3)
+
 #define PIPESIZE 512
+#define PIPESIZE 512
+#define FDS 10
+#define OPEN 1
+#define CLOSED 0
+
+#define EOF -1
 typedef struct Pipe
 {
     char data[PIPESIZE];

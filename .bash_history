@@ -233,3 +233,16 @@ make clean
 make all
 make clean 
 exit
+cd root
+make clean
+make all
+make clean 
+make all
+make clean
+make clean
+make all
+make clean
+make all
+make clean
+exxit
+exit
