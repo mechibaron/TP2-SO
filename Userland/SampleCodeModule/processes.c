@@ -1,126 +1,181 @@
-// #include <stdio.h>
-// #include <stdlib.h>
-// #include <unistd.h>
-// #include <semaphore.h>
-// #include <string.h>
-// #include <signal.h>
 #include "include/syslib.h"
 
-#define MAX_PHILOSOPHERS 10
+#define MAX_PHYLOSOPHERS 20
 #define EAT_SECONDS 1
+
 #define THINKING 0
 #define EATING 1
 #define HUNGRY 2
 
-typedef struct {
-    int state;
-    int pid;
-} Philosopher;
+sem_t mutexSem;
+sem_t phyloSem[MAX_PHYLOSOPHERS];
 
-Philosopher philosophers[MAX_PHILOSOPHERS];
-int philosopher_count = 0;
-sem_t mutex;
-sem_t philoSem[MAX_PHILOSOPHERS];
+int phyloQty = 0;
 
-void check_availability(int index) {
-    if (philosophers[index].state == HUNGRY &&
-        philosophers[(index + philosopher_count - 1) % philosopher_count].state != EATING &&
-        philosophers[(index + 1) % philosopher_count].state != EATING) {
-        philosophers[index].state = EATING;
-        printf("Philosopher %d is EATING\n", index);
-        sem_post(&philoSem[index]);
+int state[MAX_PHYLOSOPHERS];
+pid_t phyloPids[MAX_PHYLOSOPHERS];
+char phyloNames[MAX_PHYLOSOPHERS] = {'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J'};
+
+void takeChopsticks(int index);
+void putChopsticks(int index);
+void checkAvailability(int index);
+int left(int index);
+int right(int index);
+void printState();
+
+void phylo(uint64_t argc, char *argv[]) {
+    fprintf(STDOUT, "Welcome to the dining philosophers' problem!\n");
+
+    mutexSem = sem_open(30, 1);
+
+    for (int i = 0; i < MAX_PHYLOSOPHERS; i++) {
+        phyloSem[i] = 0;
     }
-}
 
-void take_chopsticks(int index) {
-    sem_wait(&mutex);
-    philosophers[index].state = HUNGRY;
-    check_availability(index);
-    sem_post(&mutex);
-    sem_wait(&philoSem[index]);
-}
-
-void put_chopsticks(int index) {
-    sem_wait(&mutex);
-    philosophers[index].state = THINKING;
-    check_availability((index + philosopher_count - 1) % philosopher_count);
-    check_availability((index + 1) % philosopher_count);
-    sem_post(&mutex);
-}
-
-void add_philosopher() {
-    if (philosopher_count < MAX_PHILOSOPHERS) {
-        sem_init(&philoSem[philosopher_count], 0, 0);
-        philosophers[philosopher_count].state = THINKING;
-
-        char seat[3];
-        snprintf(seat, sizeof(seat), "%d", philosopher_count);
-        char* argv[] = {"philosopher", seat, NULL};
-
-        int pid = fork();
-        if (pid == 0) {
-            // Child process (philosopher)
-            execv("./philosopher", argv);
-        } else {
-            // Parent process
-            philosophers[philosopher_count].pid = pid;
-            philosopher_count++;
-        }
-    } else {
-        printf("Error: Cannot add more philosophers. Maximum reached.\n");
-    }
-}
-
-void remove_philosopher() {
-    if (philosopher_count > 0) {
-        philosopher_count--;
-        sem_close(&philoSem[philosopher_count]);
-
-        if (philosophers[philosopher_count].state == EATING || philosophers[philosopher_count].state == THINKING) {
-            put_chopsticks((philosopher_count + philosopher_count - 1) % philosopher_count);
-            put_chopsticks((philosopher_count + 1) % philosopher_count);
-        }
-
-        sys_kill(philosophers[philosopher_count].pid);
-    } else {
-        printf("Error: Cannot remove more philosophers. No philosophers left.\n");
-    }
-}
-
-void terminate() {
-    while (philosopher_count > 0) {
-        remove_philosopher();
-    }
-}
-
-void print_state() {
-    printf("Philosopher Table: ");
-    for (int i = 0; i < philosopher_count; i++) {
-        printf("Philosopher %d: %c ", i, philosophers[i].state == EATING ? 'E' : '.');
-    }
-    printf("\n");
-}
-
-int main() {
-    sem_init(&mutex, 0, 1);
-
-    printf("Press 'a' to add a philosopher.\nPress 'r' to remove a philosopher.\nPress 'q' to exit.\n");
-
+    fprintf(STDOUT, "Press 'a' to add a philosopher, 'r' to remove a philosopher, or 'q' to exit.\n");
     char c;
-    while (1) {
-        c = getchar();
-        if (c == 'a') {
-            add_philosopher();
-            print_state();
-        } else if (c == 'r') {
-            remove_philosopher();
-            print_state();
-        } else if (c == 'q') {
-            terminate();
-            break;
+    while ((c = getChar()) != 0) {
+        switch (c) {
+            case 'a':
+                if (phyloQty < MAX_PHYLOSOPHERS) {
+                    addPhylo(phyloQty);
+                } else {
+                    fprintf(STDOUT, "Error: Cannot add more philosophers.\n");
+                }
+                break;
+            case 'r':
+                if (phyloQty > 1) {
+                    deletePhylo(phyloQty - 1);
+                } else {
+                    fprintf(STDOUT, "Error: Cannot remove more philosophers.\n");
+                }
+                break;
+            case 'q':
+                finishEating();
+                sem_close(mutexSem);
+                sys_exit(0);
+                break;
         }
     }
 
-    sem_destroy(&mutex);
+    fprintf(STDOUT, "Goodbye!\n");
+    finishEating();
+    sem_close(mutexSem);
+    sys_exit(0);
+}
+
+int addPhylo(int index) {
+    if (index >= MAX_PHYLOSOPHERS) {
+        return -1;
+    }
+
+    sem_wait(mutexSem);
+
+    state[index] = THINKING;
+    char seatIdx[3];
+    uintToBase(index, seatIdx, 10);
+    char *argv[] = {"phylo", seatIdx, "&"};
+
+    phyloSem[index] = sem_open(index + 100, 1);
+    if (phyloSem[index] == 0) {
+        return -1;
+    }
+
+    phyloPids[index] = sys_exec((uint64_t)&phyloProcess, 2, argv);
+    phyloQty++;
+
+    sem_post(mutexSem);
     return 0;
+}
+
+void phyloProcess(int argc, char *argv[]) {
+    int seat = atoi((char *)argv[1]);
+
+    while (1) {
+        sleep(EAT_SECONDS);
+        takeChopsticks(seat);
+        sleep(EAT_SECONDS);
+        putChopsticks(seat);
+    }
+}
+
+void takeChopsticks(int index) {
+    sem_wait(mutexSem);
+
+    state[index] = HUNGRY;
+    checkAvailability(index);
+
+    sem_post(phyloSem[index]);
+    sem_wait(mutexSem);
+}
+
+void putChopsticks(int index) {
+    sem_wait(mutexSem);
+
+    state[index] = THINKING;
+    checkAvailability(left(index));
+    checkAvailability(right(index));
+
+    sem_post(mutexSem);
+}
+
+void checkAvailability(int index) {
+    if (state[index] == HUNGRY && state[left(index)] != EATING && state[right(index)] != EATING) {
+        state[index] = EATING;
+        printState();
+        sem_post(phyloSem[index]);
+    }
+}
+
+int left(int index) {
+    return (index == 0) ? phyloQty - 1 : index - 1;
+}
+
+int right(int index) {
+    return (index == phyloQty - 1) ? 0 : index + 1;
+}
+
+void deletePhylo(int index) {
+    if (index < 0 || phyloQty == 0) {
+        return;
+    }
+
+    sem_wait(mutexSem);
+
+    int eating = (state[index] == EATING);
+
+    if (sem_close(phyloSem[index]) == -1) {
+        fprintf(STDOUT, "Error closing philosopher's semaphore\n");
+    }
+
+    sys_kill(phyloPids[index]);
+    phyloQty--;
+
+    if (eating) {
+        checkAvailability(index - 1);
+        checkAvailability(0);
+    }
+
+    sem_post(mutexSem);
+}
+
+void finishEating() {
+    while (phyloQty > 0) {
+        if (sem_close(phyloSem[phyloQty - 1]) == -1) {
+            fprintf(STDOUT, "Error closing philosopher's semaphore\n");
+        }
+
+        sys_kill(phyloPids[phyloQty - 1]);
+        phyloQty--;
+    }
+}
+
+void printState() {
+    char output[2];
+    for (int i = 0; i < phyloQty; i++) {
+        state[i] == EATING ? (output[0] = 'E') : (output[0] = '.');
+        output[1] = '\0';
+        fprintf(STDOUT, output);
+    }
+    fprintf(STDOUT, "\n");
 }
