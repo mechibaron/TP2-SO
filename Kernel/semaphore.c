@@ -3,6 +3,7 @@
 #include <queue.h>
 #include <scheduler.h>
 #include <stdlib.h>
+#include <lib.h>
 
 extern int block(uint8_t *lock); // Both of theese functions will be used to avoid
 extern void unblock(uint8_t *lock);  // race conditions in the post and wait
@@ -97,7 +98,7 @@ int sem_post(sem_t sem)
     }
 
     block(&(sem->locked));
-    if (sem->blockedProcesses->qty != 0)
+    if (sem->blockedProcesses->size != 0)
     {
         pid_t pidCurrent = dequeuePid(sem->blockedProcesses);
         unblockProcess(pidCurrent);

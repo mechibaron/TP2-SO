@@ -1,16 +1,15 @@
 {
     "files.associations": {
-        "defs.h": "c",
-        "stdint.h": "c",
-        "idtloader.h": "c",
-        "interrupts.h": "c",
-        "systemcalls.h": "c",
+        "semaphore.h": "c",
+        "queue.h": "c",
+        "memorymanager.h": "c",
         "scheduler.h": "c",
-        "naiveconsole.h": "c",
-        "stddef.h": "c",
-        "lib.h": "c",
-        "moduleloader.h": "c",
-        "graphicmode.h": "c",
-        "memorymanager.h": "c"
+        "defs.h": "c",
+        "signal.h": "c",
+        "unistd.h": "c",
+        "stdio.h": "c",
+        "stdlib.h": "c",
+        "syslib.h": "c",
+        "lib.h": "c"
     }
 }

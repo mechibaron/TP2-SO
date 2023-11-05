@@ -16,7 +16,7 @@ uint8_t read_port(uint8_t key);
 char *cpuVendor(char *result);
 void tick();
 void loadUserland(uint64_t * address, uint64_t * rsp);
-// char * strcpy(const char * str);
+char * strcpy(const char * str);
 unsigned int strlen(const char *str);
 int strcmp (const char *p1, const char *p2);
 
