@@ -7,6 +7,8 @@
 #include <scheduler.h>
 
 #define SIZE_BUF 200
+#define BUFFER_LENGTH 32
+
 
 #define CAPSLOCK 0x3A
 #define LSHIFT 0x2A
@@ -17,6 +19,7 @@
 #define ESC_ASCII 27
 #define EOF -1
 
+static unsigned int realDim = 0, last = 0;
 static char buffer[SIZE_BUF] = {0};
 static unsigned int index_buffer = 0;
 static int mayusFlag = 0;
@@ -234,4 +237,31 @@ static int isEscape(char keyCode) {
 // Para saber eso basta con hacer un and con el bit mas significativo pues el mismo sera 1 si sube la tecla y 0 en caso contrario
 static int keyPressed(char keyCode) {
     return (keyCode & 0b10000000) == 0b00000000;
+}
+
+
+
+uint64_t readBuffer(char *output, uint64_t count)
+{
+  uint64_t i = 0;
+  for (; i < count && last < realDim && last < BUFFER_LENGTH; i++)
+  {
+    output[i] = buffer[last++];
+  }
+  if (last == BUFFER_LENGTH)
+  {
+    realDim = last = 0;
+  }
+
+  _sti();
+  while (i < count)
+  {
+    if (last < realDim)
+    {
+      output[i++] = buffer[last++];
+    }
+  }
+  _cli();
+
+  return i;
 }

@@ -1,9 +1,8 @@
-#include "systemCalls.h"
-#include "memoryManager.h"
-#include "scheduler.h"
 #include <semaphore.h>
-#include "pipe.h"
-#include "defs.h"
+#include <systemCalls.h>
+#include <memoryManager.h>
+#include <scheduler.h>
+#include <defs.h>
 
 static uint64_t sys_read(unsigned int fd, char *output, uint64_t count);
 static void sys_write(unsigned int fd, const char *buffer, uint64_t count);
@@ -242,7 +241,7 @@ static int sys_kill(pid_t pid)
         return -1;
     }
 
-    int x = preparePlaceholderProcess(pid);
+    int x = prepareDummy(pid);
     if (x == -1)
     {
         return -1;

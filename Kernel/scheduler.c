@@ -514,3 +514,55 @@ processInfo *getProcessesInfo() {
 }
 
 
+processInfo *getProccessesInfo()
+{
+    processInfo *first = NULL;
+    processInfo *current = NULL;
+    Queue currentNode = active;
+    pid_t firstPid = active->process.pid;
+
+    while (currentNode != NULL)
+    {
+        if (current != NULL)
+        {
+            current->next = (processInfo *)memory_manager_malloc(sizeof(processInfo));
+            current = current->next;
+        }
+        else
+        {
+            current = (processInfo *)memory_manager_malloc(sizeof(processInfo));
+        }
+        current->pid = currentNode->process.pid;
+        if (current->pid == firstPid)
+        {
+            first = current;
+        }
+        current->priority = currentNode->process.priority;
+        current->stackBase = currentNode->process.stackBase;
+        current->status = currentNode->process.status;
+        currentNode = currentNode->next;
+    }
+    currentNode = expired;
+
+    while (currentNode != NULL)
+    {
+        if (current != NULL)
+        {
+            current->next = (processInfo *)memory_manager_malloc(sizeof(processInfo));
+            current = current->next;
+        }
+        else
+        {
+            current = (processInfo *)memory_manager_malloc(sizeof(processInfo));
+        }
+        current->pid = currentNode->process.pid;
+        current->priority = currentNode->process.priority;
+        current->stackBase = currentNode->process.stackBase;
+        current->status = currentNode->process.status;
+        currentNode = currentNode->next;
+    }
+    current->next = NULL;
+    return first;
+}
+
+
