@@ -1,7 +1,7 @@
 #include "defs.h"
 #include "memoryManager.h"
 #include "queue.h"
-#include "../scheduler/scheduler.h"
+#include <scheduler.h>
 
 Pipe *pipeOpen();
 int pipeClose(Pipe *pipe);

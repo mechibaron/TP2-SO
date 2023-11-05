@@ -3,10 +3,10 @@
 
 #include <stdint.h>
 #include <idtLoader.h>
-// #include <naiveConsole.h>
+#include <naiveConsole.h>
 #include <lib.h>
-#include "../scheduler/scheduler.h"
-// #include <inforeg.h>
+#include <scheduler.h>
+#include <inforeg.h>
 
 void keyboard_handler();
 uint64_t readBuffer(char* output, uint64_t count);

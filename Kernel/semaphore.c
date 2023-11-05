@@ -2,8 +2,7 @@
 #include <memoryManager.h>
 #include <queue.h>
 #include <scheduler.h>
-#include <stdlib.h>
-#include <lib.h>
+
 
 extern int block(uint8_t *lock); // Both of theese functions will be used to avoid
 extern void unblock(uint8_t *lock);  // race conditions in the post and wait
@@ -43,7 +42,7 @@ sem_t sem_open(char *name, uint64_t value)
         semAux->sem.processesOpened++;
         return &(semAux->sem);
     }
-    semAux = (semNode *)memoryManagerAlloc(sizeof(semNode));
+    semAux = (semNode *)memory_manager_malloc(sizeof(semNode));
     semAux->sem.name = strcpy(name);
     semAux->sem.value = value;
     semAux->sem.locked = 0;
@@ -81,8 +80,8 @@ int sem_close(sem_t sem)
     }
 
     freeQueue(sem->blockedProcesses);
-    memoryManagerFreefree(sem->name);
-    memoryManagerFreefree(semAux);
+    free_memory_manager(sem->name);
+    free_memory_manager(semAux);
     return 1;
 }
 

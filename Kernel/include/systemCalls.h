@@ -5,7 +5,7 @@
 #include <naiveConsole.h>
 #include <lib.h>
 #include "keyboard.h"
-#include "../scheduler/scheduler.h"
+#include <scheduler.h>
 #include "inforeg.h"
 #include <defs.h>
 

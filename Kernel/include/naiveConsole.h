@@ -7,7 +7,6 @@
 
 #define ERROR_FORMAT 0x0C
 
-static uint32_t uintToBase(uint64_t value, char *buffer, uint32_t base);
 void ncDeleteChar();
 void ncPrintFormat(const char* string,uint8_t format);
 void ncPrintCharFormat(char character,uint8_t format);

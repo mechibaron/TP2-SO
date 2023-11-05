@@ -2,7 +2,9 @@
 #include <stdint.h>
 #include <defs.h>
 
-typedef uint64_t sem_t;
+
+
+// typedef struct semaphore* sem_t;
 
 sem_t sem_open(char * name, uint64_t value);
 int sem_close(sem_t sem);

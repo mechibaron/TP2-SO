@@ -1,7 +1,6 @@
-#include <stdint.h>
+#include <lib.h>
 #include <stddef.h>
-#include "../include/lib.h"
-#include "memoryManager.h"
+#include <memoryManager.h>
 
 void * memset(void * destination, int32_t c, uint64_t length)
 {
@@ -51,6 +50,7 @@ void * memcpy(void * destination, const void * source, uint64_t length)
 
 	return destination;
 }
+
 unsigned int strlen(const char *str) {
     unsigned int len = 0;
     while (str[len] != '\0') {
@@ -61,7 +61,7 @@ unsigned int strlen(const char *str) {
 
 char * strcpy(const char * str) {
 	unsigned int len = strlen(str);
-	char * new_str = memory_manager_malloc(len+1);
+	char * new_str = memoryManagerAlloc(len+1);
 	if (new_str != NULL) {
 		memcpy(new_str, str, len+1);
 	}

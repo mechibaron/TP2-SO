@@ -8,8 +8,8 @@
 #include <string.h>
 #include <naiveConsole.h>
 #include "interrupts.h"
-#include "time.h"
-#include "../include/defs.h"
+#include "defs.h"
+#include <time.h>
 
 
 #define READY 0

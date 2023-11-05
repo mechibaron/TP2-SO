@@ -1,12 +1,11 @@
 #include <stdint.h>
-// #include <string.h>
 #include <lib.h>
 #include <moduleLoader.h>
 #include <naiveConsole.h>
 #include <graphicMode.h>
 #include <idtLoader.h>
 #include <stddef.h>
-#include "../scheduler/scheduler.h"
+#include <scheduler.h>
 
 extern uint8_t text;
 extern uint8_t rodata;
