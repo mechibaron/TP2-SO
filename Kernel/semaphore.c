@@ -4,7 +4,7 @@
 #include <scheduler.h>
 
 
-extern int block(uint8_t *lock); // Both of theese functions will be used to avoid
+extern int block(uint8_t *lock); // Both of these functions will be used to avoid
 extern void unblock(uint8_t *lock);  // race conditions in the post and wait
 
 typedef struct semNode

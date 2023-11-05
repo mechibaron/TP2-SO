@@ -1,7 +1,7 @@
 #include "systemCalls.h"
 #include "memoryManager.h"
 #include "scheduler.h"
-// #include <semaphore.h>
+#include <semaphore.h>
 #include "pipe.h"
 #include "defs.h"
 
@@ -138,7 +138,7 @@ static uint64_t sys_read(unsigned int fd, char *output, uint64_t count)
     }
     if (pcb->fileDescriptors[PIPEOUT].mode == OPEN)
     {
-        return pipeRead(pcb->pipe, output, count);
+        return pipeReadData(pcb->pipe, output, count);
     }
     return 0;
 }
@@ -167,7 +167,7 @@ static void sys_write(unsigned int fd, const char *buffer, uint64_t count)
     }
     else if (pcb->fileDescriptors[PIPEIN].mode == OPEN)
     {
-        pipeWrite(pcb->pipe, buffer, count);
+        pipeWriteData(pcb->pipe, buffer, count);
     }
     return;
 }
@@ -212,12 +212,12 @@ static MemoryInfo *sys_memInfo()
 
 static void *sys_memMalloc(uint64_t size)
 {
-    return memoryManagerAlloc(size);
+    return memory_manager_malloc(size);
 }
 
 static void sys_memFree(uint64_t ap)
 {
-    memoryManagerFreefree((void *)ap);
+    free_memory_manager((void *)ap);
 }
 
 static pid_t sys_waitpid(pid_t pid)

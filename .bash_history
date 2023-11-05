@@ -303,3 +303,40 @@ clear
 make all
 git add .
 exit
+cd root
+cd toolchain 
+make clean
+make all
+cd ..
+make clean
+make all
+clear
+make clean
+clear
+make all
+make clean 
+clear
+make all
+make clean 
+clear
+make all
+make clean 
+clear
+make all
+make clean
+cler
+clear
+make all
+make clean
+clear
+make all
+make clean 
+clear
+make all
+make clean
+clear
+make all
+make clean 
+clear
+make all
+exit

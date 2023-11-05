@@ -1,15 +1,10 @@
-#include <stdint.h>
-#include <stdio.h>
-#include <stddef.h>
-#include <stdlib.h>
-#include "scheduler.h"
-#include "../include/interrupts.h"
-#include "../include/memoryManager.h"
-#include "../include/lib.h"
-#include "../include/queue.h"
-#include "../include/pipe.h"
-#include "../include/defs.h"
 
+#include "scheduler.h"
+#include <interrupts.h>
+#include <memoryManager.h>
+#include <queue.h>
+#include <lib.h>
+#include <pipe.h>
 
 
 extern uint64_t loadProcess(uint64_t rip, uint64_t rsp, uint64_t argc, uint64_t argv); // implement on assembler
@@ -171,7 +166,7 @@ char **copy_argv(int argc, char **argv) {
         //asigna memoria para la nueva cadena
         new_argv[i] = memory_manager_malloc(length + 1); 
         //copiamos la cadena original a la nueva ubicacion
-        strcpy(new_argv[i], argv[i]); 
+        new_argv[i] = strcpy(argv[i]); 
     }
 
     return new_argv;

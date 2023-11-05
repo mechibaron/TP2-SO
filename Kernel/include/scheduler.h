@@ -5,10 +5,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
-#include <string.h>
 #include <naiveConsole.h>
-#include "interrupts.h"
-#include "defs.h"
+#include <interrupts.h>
+#include <defs.h>
 #include <time.h>
 
 

@@ -76,24 +76,24 @@ void memory_status(Block* memory) {
     // printf("Free Memory: %lu\n", free_memory);
 }
 
-int main() {
-    // Crear un bloque de memoria de tamaño MEMORY_SIZE
-    Block memory;
-    initialize_memory(&memory, MEMORY_SIZE);
+// int main() {
+//     // Crear un bloque de memoria de tamaño MEMORY_SIZE
+//     Block memory;
+//     initialize_memory(&memory, MEMORY_SIZE);
 
-    // Asignar y liberar memoria
-    void* ptr1 = allocate_memory(&memory, 128);
-    void* ptr2 = allocate_memory(&memory, 256);
-    void* ptr3 = allocate_memory(&memory, 64);
+//     // Asignar y liberar memoria
+//     void* ptr1 = allocate_memory(&memory, 128);
+//     void* ptr2 = allocate_memory(&memory, 256);
+//     void* ptr3 = allocate_memory(&memory, 64);
 
-    deallocate_memory(&memory, ptr2);
-    deallocate_memory(&memory, ptr1);
+//     deallocate_memory(&memory, ptr2);
+//     deallocate_memory(&memory, ptr1);
 
-    // Volver a asignar memoria
-    void* ptr4 = allocate_memory(&memory, 200);
+//     // Volver a asignar memoria
+//     void* ptr4 = allocate_memory(&memory, 200);
 
-    // Consultar el estado de la memoria
-    memory_status(&memory);
+//     // Consultar el estado de la memoria
+//     memory_status(&memory);
 
-    return 0;
-}
+//     return 0;
+// }

@@ -2,9 +2,9 @@
 // PVS-Studio Static Code Analyzer for C, C++ and C#: http://www.viva64.com
 #include <keyboard.h>
 #include <naiveConsole.h>
-// #include <syscalls_management.h>
+#include <systemCalls.h>
 #include <interrupts.h>
-#include "../scheduler/scheduler.h"
+#include <scheduler.h>
 
 #define SIZE_BUF 200
 
