@@ -196,3 +196,40 @@ make all
 make clean 
 git add .
 exit
+make all
+cd root
+make all
+make clean 
+cd toolchain 
+make clean
+make all
+cd ..
+make clean 
+make alll
+make all
+make clean 
+make all
+exit
+cd root 
+cd toolchain 
+make clean 
+make all
+cd ..
+make clean 
+make all
+clear
+exit
+cd root
+make clean 
+cd toolchain 
+make clean
+make all
+cd ..
+make clean
+make all
+make clean
+make clean 
+make clean 
+make all
+make clean 
+exit

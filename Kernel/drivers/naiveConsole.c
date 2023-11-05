@@ -308,7 +308,5 @@ void scrollUp()
 			i++;
 		}
 		currentVideoW[currentWindow] = videoWindow[currentWindow] + width * 2 * (height - 1);
-		// Hardcoded memory directions.
-		// currentVideoW[currentWindow]=(currentWindow) ? (0xb8f00 + width) : (0xb8f00);
 	}
 }

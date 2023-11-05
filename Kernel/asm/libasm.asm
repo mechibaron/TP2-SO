@@ -1,42 +1,16 @@
 GLOBAL cpuVendor
-GLOBAL sys_RTClock
-GLOBAL sys_readKey
-GLOBAL save_registers
+GLOBAL getSeconds
+GLOBAL getMinutes
+GLOBAL getHours
+GLOBAL read_port
+GLOBAL getDay
+GLOBAL getMonth
+GLOBAL getYear
 GLOBAL tick
-
-; systemCalls.c
-EXTERN store_registers
+GLOBAL loadUserland
 
 section .text
-
-sys_RTClock:
-	push rbp
-	mov rbp, rsp
-
-	mov al, dil
-	out 70h, al
-	in al, 71h
-
-	mov rsp, rbp
-	pop rbp
-	ret
-
-sys_readKey:
-	push rbp
-	mov rbp, rsp
-
-	xor rax, rax
-.loop:
-	in al, 0x64      ; Read 8042 status register. Can be read at any time.
-	and al, 0x01     ; Output register 60h should only be read IIF Bit 0 of status port is set to 1.
-	cmp al, 0
-	je .loop
-	in al, 0x60
-
-	mov rsp, rbp
-	pop rbp
-	ret
-
+	
 cpuVendor:
 	push rbp
 	mov rbp, rsp
@@ -61,15 +35,111 @@ cpuVendor:
 	pop rbp
 	ret
 
-; Save registers for inforeg
-save_registers:
+setBinaryBitRTC:
 	push rbp
-	mov rbp, rsp
-
-	mov rdi, rsp
-	add rdi, 112		; 14*8 = 112
-	call store_registers
-
-    mov rsp, rbp
+	mov rbp,rsp
+	mov al,0xB
+	out 70h,al
+	in al,71h
+	OR al,0b00000100; dejo en 1 el bit 2 del registro que es el que quiro cambiar 
+	out 71h,al
+	mov rsp,rbp
 	pop rbp
 	ret
+
+getSeconds:
+    push rbp
+    mov rbp,rsp
+    
+	call setBinaryBitRTC
+    mov al,0
+    out 70h,al
+    in al,71h
+    mov rsp,rbp
+    pop rbp
+    ret
+
+getMinutes:
+    push rbp
+    mov rbp,rsp
+	call setBinaryBitRTC
+    mov al,2
+    out 70h,al
+    in al,71h
+    mov rsp,rbp
+    pop rbp
+    ret
+
+getHours:
+    push rbp
+    mov rbp,rsp
+	call setBinaryBitRTC
+    mov al,04
+    out 70h,al
+    in al,71h
+    mov rsp,rbp
+    pop rbp
+    ret	
+
+read_port:
+    push rbp
+    mov rbp, rsp
+    
+    mov dx, di
+    in al, dx
+
+    mov rsp, rbp
+    pop rbp 
+    ret
+getDay:
+    push rbp
+    mov rbp,rsp
+	call setBinaryBitRTC
+    mov al,07
+    out 70h,al
+    in al,71h
+    mov rsp,rbp
+    pop rbp
+    ret		
+
+getMonth:
+    push rbp
+    mov rbp,rsp
+	call setBinaryBitRTC
+    mov al,08
+    out 70h,al
+    in al,71h
+    mov rsp,rbp
+    pop rbp
+    ret	
+
+getYear:
+	push rbp
+    mov rbp,rsp
+	call setBinaryBitRTC
+    mov al,09
+    out 70h,al
+    in al,71h
+    mov rsp,rbp
+    pop rbp
+    ret	
+
+tick:
+    push rbp
+    mov rbp, rsp
+    int 20h
+    mov rsp, rbp
+    pop rbp
+    ret
+
+loadUserland:
+    push rbp
+    mov rbp, rsp
+
+    mov rsp, rsi
+    push .return
+    jmp rdi
+.return:
+    mov rsp, rbp
+    pop rbp
+    ret

@@ -71,9 +71,9 @@ void memory_status(Block* memory) {
         block = block->next;
     }
     
-    printf("Total Memory: %lu\n", total_memory);
-    printf("Used Memory: %lu\n", used_memory);
-    printf("Free Memory: %lu\n", free_memory);
+    // printf("Total Memory: %lu\n", total_memory);
+    // printf("Used Memory: %lu\n", used_memory);
+    // printf("Free Memory: %lu\n", free_memory);
 }
 
 int main() {
