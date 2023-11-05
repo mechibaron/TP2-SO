@@ -340,3 +340,18 @@ make clean
 clear
 make all
 exit
+cd root
+cd toolchain 
+make clean 
+make all 
+cd ..
+make clean 
+clear
+make all
+make clean 
+clear
+make all
+make clean 
+clear
+make all
+exit
