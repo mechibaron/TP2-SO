@@ -355,3 +355,9 @@ make clean
 clear
 make all
 exit
+cd root/
+make
+make buddy
+clear
+make
+exit

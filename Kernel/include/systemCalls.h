@@ -15,7 +15,7 @@
 #define PIPEOUT 3
 #define PIPEIN 4
 
-void _sysCallHandler(void);
+void _syscallHandler(void);
 
 
 typedef struct

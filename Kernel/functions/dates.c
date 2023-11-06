@@ -1,4 +1,4 @@
-#include "../include/dates.h"
+#include <dates.h>
 
 static uint8_t getPreviousDay(uint8_t day);
 

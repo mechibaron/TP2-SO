@@ -2,7 +2,7 @@
 #include <idtLoader.h>
 #include <defs.h>
 #include <interrupts.h>
-#include "../include/systemCalls.h"
+#include <systemCalls.h>
 
 #pragma pack(push)		// Current lineup push 
 #pragma pack (1) 		// Align the following structures to 1 byte 
@@ -37,7 +37,7 @@ void load_idt() {
   setup_IDT_entry (0x21, (uint64_t)&_irq01Handler);   // keyboard
 
   // Software Interrupts
-  setup_IDT_entry (0x80, (uint64_t)&_sysCallHandler);
+  setup_IDT_entry (0x80, (uint64_t)&_syscallHandler);
 
   // 1111 1100 timer-tick and keyboard
 	picMasterMask(0xFC);   

@@ -1,245 +1,202 @@
-// This is a personal academic project. Dear PVS-Studio, please check it.
-// PVS-Studio Static Code Analyzer for C, C++ and C#: http://www.viva64.com
 #include <keyboard.h>
-#include <naiveConsole.h>
-#include <systemCalls.h>
-#include <interrupts.h>
-#include <scheduler.h>
 
-#define SIZE_BUF 200
 #define BUFFER_LENGTH 32
 
+static char keys[] = {
+    0,  // Error
+    27, // Escape
+    '1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '-', '=',
+    8,    // Backspace
+    '\t', // Tab
+    'q', 'w', 'e', 'r', 't', 'y', 'u', 'i', 'o', 'p', '[', ']',
+    '\n', // Enter
+    0,    // LControl
+    'a', 's', 'd', 'f', 'g', 'h', 'j', 'k', 'l', ';', '\'', '`',
+    0, // LShift
+    '\\', 'z', 'x', 'c', 'v', 'b', 'n', 'm', ',', '.', '/',
+    0, // RShift
+    '*',
+    0, // LAlt
+    ' ',
+    0,                            // CapsLock
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // F1-F10
+    0,                            // NumLock
+    0,                            // ScrollLock
+    '7', '8', '9', '-', '4', '5', '6', '+', '1', '2', '3', '0', '.'};
 
-#define CAPSLOCK 0x3A
-#define LSHIFT 0x2A
-#define RSHIFT 0x36
-#define BACKSPACE 0x0E
-#define ESC 0x01
-#define CTRL 0x1D
-#define ESC_ASCII 27
-#define EOF -1
+static char capKeys[] = {
+    0,  // Error
+    27, // Escape
+    '1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '-', '=',
+    8,    // Backspace
+    '\t', // Tab
+    'Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P', '[', ']',
+    '\n', // Enter
+    0,    // LControl
+    'A', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L', ';', '\'', '`',
+    0, // LShift
+    '\\', 'Z', 'X', 'C', 'V', 'B', 'N', 'M', ',', '.', '/',
+    0, // RShift
+    '*',
+    0, // LAlt
+    ' ',
+    0,                            // CapsLock
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // F1-F10
+    0,                            // NumLock
+    0,                            // ScrollLock
+    '7', '8', '9', '-', '4', '5', '6', '+', '1', '2', '3', '0', '.'};
 
+static char shiftCapKeys[] = {
+    0,  // Error
+    27, // Escape
+    '!', '@', '#', '$', '%', '^', '&', '*', '(', ')', '_', '+',
+    8, // Backspace
+    '\t',
+    'q', 'w', 'e', 'r', 't', 'y', 'u', 'i', 'o', 'p', '{', '}',
+    '\n', // Enter
+    0,    // LControl
+    'a', 's', 'd', 'f', 'g', 'h', 'j', 'k', 'l', ':', '\"',
+    '~',
+    0, // LShift
+    '|',
+    'z', 'x', 'c', 'v', 'b', 'n', 'm', '<', '>', '?',
+    0, // RShift
+    '*',
+    0, // LAlt
+    ' ',
+    0,                            // CapsLock
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // F1-F10
+    0,                            // NumLock
+    0,                            // ScrollLock
+    '7', '8', '9', '-', '4', '5', '6', '+', '1', '2', '3', '0', '.'};
+
+static char shiftedKeys[] = {
+    0,  // Error
+    27, // Escape
+    '!', '@', '#', '$', '%', '^', '&', '*', '(', ')', '_', '+',
+    8, // Backspace
+    '\t',
+    'Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P', '{', '}',
+    '\n', // Enter
+    0,    // LControl
+    'A', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L', ':', '\"',
+    '~',
+    0, // LShift
+    '|',
+    'Z', 'X', 'C', 'V', 'B', 'N', 'M', '<', '>', '?',
+    0, // RShift
+    '*',
+    0, // LAlt
+    ' ',
+    0,                            // CapsLock
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // F1-F10
+    0,                            // NumLock
+    0,                            // ScrollLock
+    '7', '8', '9', '-', '4', '5', '6', '+', '1', '2', '3', '0', '.'};
+
+static uint8_t buffer[BUFFER_LENGTH];
 static unsigned int realDim = 0, last = 0;
-static char buffer[SIZE_BUF] = {0};
-static unsigned int index_buffer = 0;
-static int mayusFlag = 0;
-static char keyChar;
-static int shiftFlag = 0;
-static int controlFlag = 0;
+static int shift = 0, capsLock = 0, control = 0, alt = 0;
 
-// este mapa esta basado en 'Keyboard Scan Codes'
-static char kbd_US[128][2] =
+static void add(char key);
+static char translate(uint16_t key);
+static uint8_t pressed(uint16_t scancode, uint16_t key);
+
+void keyboard_handler(uint64_t *registers)
+{
+  if ((!read_port(0x64)) & (0x01))
+    return;
+  uint16_t scancode = read_port(0x60);
+  uint16_t key = scancode & 0x7F;
+  if (pressed(scancode, key))
+  {
+    if (control)
     {
-        {0, 0},
-        {0, 0},
-        {'1', '!'},
-        {'2', '@'},
-        {'3', '#'},
-        {'4', '$'},
-        {'5', '$'},
-        {'6', '^'},
-        {'7', '&'},
-        {'8', '*'},
-        {'9', '('},
-        {'0', ')'},
-        {'-', '_'},
-        {'=', '+'},
-        {'\b', '\b'},
-        {'\t', '\t'},
-        {'q', 'Q'},
-        {'w', 'W'},
-        {'e', 'E'},
-        {'r', 'R'},
-        {'t', 'T'},
-        {'y', 'Y'},
-        {'u', 'U'},
-        {'i', 'I'},
-        {'o', 'O'},
-        {'p', 'P'},
-        {'[', '{'},
-        {']', '}'},
-        {'\n', '\n'},
-        {0, 0},
-        {'a', 'A'},
-        {'s', 'S'},
-        {'d', 'D'},
-        {'f', 'F'},
-        {'g', 'G'},
-        {'h', 'H'},
-        {'j', 'J'},
-        {'k', 'K'},
-        {'l', 'L'},
-        {';', ':'},
-        {'\'', '\"'},
-        {'`', '~'},
-        {0, 0},
-        {'\\', '|'},
-        {'z', 'Z'},
-        {'x', 'X'},
-        {'c', 'C'},
-        {'v', 'V'},
-        {'b', 'B'},
-        {'n', 'N'},
-        {'m', 'M'},
-        {',', '<'},
-        {'.', '>'},
-        {'/', '?'},
-        {0, 0},
-        {0, 0},
-        {0, 0},
-        {' ', ' '},
-        {0, 0}};
-
-static int isMayus(char keyCode);
-static int isShift(char keyCode);
-static int isControl(char keyCode);
-static int isEscape(char keyCode);
-
-static int keyPressed(char keyCode);
-
-/*Se invocara a esta funcion cada vez que se presione o suelte una tecla*/
-void keyboard_handler() {
-    char keyCode = bring_key();
-
-    // En caso de que la tecla este presionada se ejecutara el siguiente codigo, pues si no lo controlaramos se ejecutaria todo 2 veces
-    if (keyPressed(keyCode)) {
-
-        // Si es la tecla 'CAPS LOCK' prendemos el flag y lo volvemos a apagar unicamente cuando se presione de nuevo.
-        // Retornamos pues no es una tecla que debemos imprimir en pantalla
-        if (isMayus(keyCode)) {
-            mayusFlag = (mayusFlag == 1) ? 0 : 1;
-            return;
-        }
-
-        // Si es la tecla 'RIGHT SHIFT' o 'LEFT SHIFT' prendemos el flag de la tecla.
-        // Retornamos pues no es una tecla que debemos imprimir en pantalla
-        if (isShift(keyCode)) {
-            shiftFlag = 1;
-            return;
-        }
-
-        if (isEscape(keyCode)) {
-            keyChar = ESC_ASCII;
-            return;
-        }
-
-        // Si la tecla es 'CTRL' guardamos los registros que se hayan guardado
-        if (isControl(keyCode)) {
-            // uint64_t* copy = get_saved_registers();
-            // write_registers(copy);
-            controlFlag = 1;
-            return;
-        }
-
-        if ((mayusFlag + shiftFlag) % 2 == 0) {
-            // si la suma da 0 ninguno esta apretado -> minuscula
-            // si la suma da 2 los 2 estan apretados -> minuscula
-            keyChar = kbd_US[keyCode][0];
-        } else {
-            // si la suma da 1 alguno esta apretado -> mayuscula
-            keyChar = kbd_US[keyCode][1];
-        }
-
-        switch (keyChar) {
-            // En caso de 'back space' borramos la letra de la pantalla y disminuimos en 1 el buffer
-            case '\b':
-                if (index_buffer > 0) {
-                    ncPrintChar(keyChar);
-                    index_buffer--;
-                    buffer[index_buffer] = 0;
-                }
-                break;
-
-            case 'r':
-            case 'R':
-                if(controlFlag){
-                  uint64_t* copy = get_saved_registers();
-                  write_registers(copy);
-                }
-
-            case 'd':
-            case 'D':
-                if(controlFlag){
-                  buffer[index_buffer++] = EOF;
-                }
-
-            case 'c':
-            case 'C':
-                if(controlFlag){
-                    kill_current_FG_process();
-                }
-
-            case 'z':
-            case 'Z':
-
-            // En caso contrario agregamos la tecla al buffer y la imprimimos en pantalla
-            default:
-                if(!controlFlag){
-                  buffer[index_buffer++] = keyChar;
-                  ncPrintChar(keyChar);
-                }
-                break;
-        }
+      switch (key)
+      {
+      case 0x20: // Ctrl+D(20) = SENDS EOF
+        add(EOF);
+        break;
+      case 0x2e: // Ctrl+C = KILLS FOREGROUND PROCESS
+        killProcess(0, 1);
+        break;
+      default:
+        break;
+      }
     }
-    // Si entramos en este fragmento de codigo es porque la tecla esta subiendo
-    else {
-        // En caso de que la tecla este subiendo y sea cualquiera de los 2 'SHIFT' desactivamos el flag de shift
-        if (keyCode == (LSHIFT - 0x80) || keyCode == (RSHIFT - 0x80)) {
-            shiftFlag = 0;
-        }else if (keyCode == (CTRL - 0x80)){
-            controlFlag = 0;
-        }
-        keyChar = 0;
+    else
+    {
+      add(translate(key));
     }
+  }
 }
 
-// Devuelve el buffer
-char* getBuffer() {
-    return buffer;
+static uint8_t pressed(uint16_t scancode, uint16_t key)
+{
+  if ((scancode & 0x80) == 0x80)
+  {
+    switch (key)
+    {
+    case 0x1d:
+      control = 0;
+      break;
+    case 0x2a:
+    case 0x36:
+      shift = 0;
+      break;
+    case 0x38:
+      alt = 0;
+      break;
+    default:
+      break;
+    }
+  }
+  else
+  {
+    switch (key)
+    {
+    case 0x1d:
+      control = 1;
+      break;
+    case 0x3a:
+      capsLock = !capsLock;
+      break;
+    case 0x2a:
+    case 0x36:
+      shift = 1;
+      break;
+    case 0x38:
+      alt = 1;
+      break;
+    default:
+      return 1;
+      break;
+    }
+  }
+  return 0;
 }
 
-// Resetea el buffer colocando el index en 0
-void cleanBuffer() {
-    index_buffer = 0;
+static char translate(uint16_t key)
+{
+  if (capsLock && !shift)
+    return capKeys[key];
+  else if (capsLock && shift)
+    return shiftCapKeys[key];
+  else if (!capsLock && !shift)
+    return keys[key];
+  else
+    return shiftedKeys[key];
 }
 
-// Devuelve el tamaño del buffer
-int sizeBuffer() {
-    return index_buffer;
+static void add(char key)
+{
+  buffer[realDim++] = key;
+  if (realDim + 1 == BUFFER_LENGTH)
+  {
+    realDim = 0;
+    last = 0;
+  }
 }
-
-// Devuelve la tecla que se presiono, si es que se presiono,
-char kbHit() {
-    return keyChar;
-}
-
-// Retorna 1 si es la tecla 'CAPSLOCK'
-static int isMayus(char keyCode) {
-    return keyCode == CAPSLOCK;
-}
-
-// Retorna 1 si es 'LEFT SHIFT' o si es 'RSHIFT'
-static int isShift(char keyCode) {
-    return keyCode == LSHIFT || keyCode == RSHIFT;
-}
-
-// Retorna 1 si es 'CTRL'
-static int isControl(char keyCode) {
-    return keyCode == CTRL;
-}
-
-// Retorna 1 si es 'ESC'
-static int isEscape(char keyCode) {
-    return keyCode == ESC;
-}
-
-// Retorna 1 si la tecla de codigo 'keycode' esta presionada
-// Para saber eso basta con hacer un and con el bit mas significativo pues el mismo sera 1 si sube la tecla y 0 en caso contrario
-static int keyPressed(char keyCode) {
-    return (keyCode & 0b10000000) == 0b00000000;
-}
-
-
 
 uint64_t readBuffer(char *output, uint64_t count)
 {
