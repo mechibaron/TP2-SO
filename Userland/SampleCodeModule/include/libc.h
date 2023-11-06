@@ -45,6 +45,7 @@ processInfo *sys_ps();
 int sys_changeProcessStatus(pid_t pid);
 pid_t sys_getCurrentPid();
 int sys_secondsElapsed();
+extern uint64_t sys_get_ticks();
 
 unsigned int strlen(const char *s);
 int puts(const char *s);
@@ -66,6 +67,8 @@ void wait(int secs);
 void cat(int argc, char *argv[]);
 void wc(int argc, char *argv[]);
 void filter(int argc, char *argv[]);
+void sleep(uint64_t seconds);
+
 
 uint32_t uintToBase(uint64_t value, char *buffer, uint32_t base);
 

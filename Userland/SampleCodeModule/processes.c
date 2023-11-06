@@ -1,4 +1,5 @@
-#include "include/syslib.h"
+#include <libc.h>
+#include <processes.h>
 
 #define MAX_PHILOSOPHERS 20
 #define EAT_SECONDS 1
@@ -62,6 +63,28 @@ void addPhilosopher() {
     sem_post(mutexSem);
 }
 
+int left(int philosopher) {
+    // La función 'left' devuelve el índice del palillo a la izquierda del filósofo 'philosopher'.
+    return philosopher;
+}
+
+int right(int philosopher) {
+    // La función 'right' devuelve el índice del palillo a la derecha del filósofo 'philosopher'.
+    return (philosopher + 1) % philosopherCount;
+}
+
+void checkAvailability(int philosopher) {
+    if (philosopherStates[philosopher] == HUNGRY &&
+        philosopherStates[left(philosopher)] != EATING &&
+        philosopherStates[right(philosopher)] != EATING) {
+        // Si el filósofo está hambriento y sus vecinos no están comiendo,
+        // el filósofo puede comenzar a comer.
+        philosopherStates[philosopher] = EATING;
+        sem_post(chopstickSem[philosopher]);
+    }
+}
+
+
 void removePhilosopher() {
     if (philosopherCount == 0) {
         fprintf(STDOUT, "Failed, the number of philosophers must be greater than 0.\n");
@@ -94,6 +117,26 @@ void printState() {
     }
     fprintf(STDOUT, "\n");
 }
+
+void takeChopsticks(int philosopher) {
+    sem_wait(mutexSem); // Acceder a la región crítica
+
+    philosopherStates[philosopher] = HUNGRY;
+    checkAvailability(philosopher); // Verificar si puede tomar los palillos
+
+    sem_post(mutexSem); // Salir de la región crítica
+}
+
+void putChopsticks(int philosopher) {
+    sem_wait(mutexSem); // Acceder a la región crítica
+
+    philosopherStates[philosopher] = THINKING;
+    checkAvailability(left(philosopher)); // Verificar si el filósofo de la izquierda puede tomar el palillo derecho
+    checkAvailability(right(philosopher)); // Verificar si el filósofo de la derecha puede tomar el palillo izquierdo
+
+    sem_post(mutexSem); // Salir de la región crítica
+}
+
 
 void phylo(uint64_t argc, char *argv[]) {
     fprintf(STDOUT, "Welcome to the dining philosophers' problem!\n");

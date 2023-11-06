@@ -361,3 +361,61 @@ make buddy
 clear
 make
 exit
+cd root
+cd toolchain 
+make clean 
+make all
+cd ..
+make clean 
+clear
+make all
+ls
+clear
+make
+clear
+make
+clear
+make
+make clean 
+clear
+make all
+make clean
+make clean
+clear
+make all
+make clean
+clear
+make all
+make clean 
+clear
+make all
+make clean 
+make clean
+clear
+make all
+make clean 
+clear
+make all
+cd root 
+cd toolchain 
+make clean 
+make all
+cd ..
+make clean 
+make all
+ls
+clear
+make
+cd root
+make clean 
+clear
+make all
+make clean 
+clear
+make all
+make
+make
+make clean
+cler
+clear
+exit

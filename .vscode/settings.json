@@ -15,6 +15,9 @@
         "naiveconsole.h": "c",
         "keyboard.h": "c",
         "idtloader.h": "c",
-        "interrupts.h": "c"
+        "interrupts.h": "c",
+        "libc.h": "c",
+        "processes.h": "c",
+        "types.h": "c"
     }
 }

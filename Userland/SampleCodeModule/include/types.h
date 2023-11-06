@@ -38,5 +38,4 @@ typedef struct memoryInfo
 
 // Semaphores
 typedef uint64_t sem_t;
-
 typedef void (*command)(int, char **);

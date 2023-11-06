@@ -29,6 +29,8 @@ GLOBAL sys_changeProcessStatus
 GLOBAL sys_getCurrentPid
 GLOBAL sys_secondsElapsed
 
+GLOBAL sys_get_ticks
+
 section .text
 sys_write:
     push rbp
@@ -293,3 +295,17 @@ div_zero:
     mov ecx, 0
     div ecx
     ret
+
+sys_get_ticks:
+    push rbp     
+    mov rbp, rsp     
+    push rbx
+
+    mov rax, 16  
+    int 80h
+
+    pop rbx
+    mov rsp, rbp     
+    pop rbp     
+    ret
+
