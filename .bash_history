@@ -470,3 +470,9 @@ make clean
 clear
 make all
 exit
+cd root
+make clear
+cd root
+ls
+make clean
+exit
