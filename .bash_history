@@ -452,3 +452,21 @@ make clean
 clear
 make all
 exit
+cd root
+make clean
+clear
+cd toolchain
+make clean
+make all
+clear
+cd ..
+make all
+clear
+make clean
+clear
+make all
+clear
+make clean
+clear
+make all
+exit

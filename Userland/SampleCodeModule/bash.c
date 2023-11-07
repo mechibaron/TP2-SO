@@ -139,9 +139,9 @@ command command_parser(char *buffer)
     {
         return (command)test_priority;
     }
-    else if ((strcmp(buffer, "test_sync")) == 0)
+    else if ((strcmp(buffer, "test_sem")) == 0)
     {
-        return (command)test_sync;
+        return (command)test_sem;
     }
     else if ((strcmp(buffer, "ps")) == 0)
     {
