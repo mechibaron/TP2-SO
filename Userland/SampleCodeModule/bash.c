@@ -1,6 +1,8 @@
-#include <bash.h>
-#include <libc.h>
-#include <processes.h>
+#include "include/bash.h"
+#include "include/types.h"
+#include "include/libc.h"
+#include "include/processes.h"
+
 
 
 #define MAX_SIZE_CMD 32
@@ -45,7 +47,7 @@ void sh()
     int i = 0;
     while (i != -1)
     {
-        puts("McWhigginOS:$ ");
+        puts("TanoiraBaron:$ ");
         i = readInput();
         putChar('\n');
     }
@@ -120,10 +122,6 @@ command command_parser(char *buffer)
     if (strcmp(buffer, "time") == 0)
     {
         return (command)getTime;
-    }
-    else if (strcmp(buffer, "fibonacci") == 0)
-    {
-        return (command)fibonacciNumbs;
     }
     else if (strcmp(buffer, "help") == 0)
     {

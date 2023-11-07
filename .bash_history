@@ -419,3 +419,22 @@ make clean
 cler
 clear
 exit
+cd root
+cd toolchain 
+make clean
+make all
+cd ..
+make clean
+clear
+make all
+clear
+make clean 
+clear
+make all
+make clean 
+clear
+make all
+make clean 
+clear
+make all
+exit
