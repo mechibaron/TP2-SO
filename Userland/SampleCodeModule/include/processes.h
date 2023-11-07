@@ -1,6 +1,8 @@
 #ifndef PROCESSES_H
 #define PROCESSES_H
 
+#include <stdint.h>
+
 void phylo(uint64_t argc, char *argv[]);
 void test_mm(int argc, char *argv[]);
 void help(int argc, char *argv[]);
@@ -15,5 +17,7 @@ void blockProcess(int argc, char *argv[]);
 void cat(int argc, char *argv[]);
 void wc(int argc, char *argv[]);
 void filter(int argc, char *argv[]);
+void getTime(int argc, char *argv[]);
+void mem(int argc, char *argv[]);
 
 #endif

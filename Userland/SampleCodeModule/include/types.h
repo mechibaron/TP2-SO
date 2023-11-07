@@ -1,3 +1,6 @@
+#ifndef TYPES_H
+#define TYPES_H
+
 #define MAX_BUFFER 512
 
 #include <stdint.h>
@@ -39,3 +42,5 @@ typedef struct memoryInfo
 // Semaphores
 typedef uint64_t sem_t;
 typedef void (*command)(int, char **);
+
+#endif

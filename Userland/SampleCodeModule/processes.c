@@ -1,6 +1,6 @@
-#include <processes.h>
+#include "include/processes.h"
 #include "include/libc.h"
-#include <types.h>
+#include "include/types.h"
 
 #define MAX_PHILOSOPHERS 20
 #define EAT_SECONDS 1

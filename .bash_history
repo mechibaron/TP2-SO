@@ -438,3 +438,17 @@ make clean
 clear
 make all
 exit
+make clean 
+cd root
+make clean
+clear
+make all
+MAKE CLEAN 
+make clean 
+clear
+make all
+clear
+make clean
+clear
+make all
+exit
