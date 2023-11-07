@@ -47,7 +47,7 @@ void sh()
     int i = 0;
     while (i != -1)
     {
-        puts("TanoiraBaron:$ ");
+        puts("TanBarOS:$ ");
         i = readInput();
         putChar('\n');
     }

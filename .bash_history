@@ -1,11 +1,3 @@
-cd root
-ls
-cd Toolchain
-make clean
-make all
-cd ..
-make clean
-make all
 ./run.sh
 make buddy
 cd Toolchain 
@@ -476,3 +468,33 @@ cd root
 ls
 make clean
 exit
+cd root
+cd toolchain 
+make clean 
+make all
+cd ..
+make clear
+make clean
+clear
+make all
+cd root
+cd toolchain
+make clean
+make all
+cd ..
+make clean
+clear
+make all
+make clean
+clear
+make all
+make clean
+clear
+make all
+make clear
+make clean
+clear
+make all
+make clean
+clear
+make all

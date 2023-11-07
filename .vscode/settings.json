@@ -18,6 +18,7 @@
         "interrupts.h": "c",
         "libc.h": "c",
         "processes.h": "c",
-        "types.h": "c"
+        "types.h": "c",
+        "memory_resource": "c"
     }
 }
