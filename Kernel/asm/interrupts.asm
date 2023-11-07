@@ -55,20 +55,20 @@ SECTION .text
 	pop rax
 %endmacro
 
-%macro irqHandlerMaster 1
-	pushState
+; %macro irqHandlerMaster 1
+; 	pushState
 
-	mov rdi, %1 ; pasaje de parametro
-	mov rsi, rsp	; pointer a backup registros
-	call irqDispatcher
+; 	mov rdi, %1 ; pasaje de parametro
+; 	mov rsi, rsp	; pointer a backup registros
+; 	call irqDispatcher
 
-	; signal pic EOI (End of Interrupt)
-	mov al, 20h
-	out 20h, al
+; 	; signal pic EOI (End of Interrupt)
+; 	mov al, 20h
+; 	out 20h, al
 
-	popState
-	iretq
-%endmacro
+; 	popState
+; 	iretq
+; %endmacro
 
 
 %macro irqHandlerMaster 1

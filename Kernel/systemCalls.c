@@ -1,4 +1,5 @@
 #include <semaphore.h>
+#include <pipe.h>
 #include <systemCalls.h>
 #include <memoryManager.h>
 #include <scheduler.h>

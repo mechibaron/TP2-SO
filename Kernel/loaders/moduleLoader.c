@@ -1,4 +1,5 @@
 #include "moduleLoader.h"
+#include "../include/naiveConsole.h"
 #include <stdint.h>
 #include <lib.h>
 

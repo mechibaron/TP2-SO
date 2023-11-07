@@ -302,9 +302,9 @@ char **strtok(char *str, char delim, int *qty)
             {
                 while (k > 0)
                 {
-                    sys_memFree((uint64_t)parts[--k]);
+                    sys_memFree((void *)parts[--k]);
                 }
-                sys_memFree((uint64_t)parts);
+                sys_memFree((void *)parts);
                 return NULL;
             }
             strcpy(new_part, buffer);
@@ -323,9 +323,9 @@ char **strtok(char *str, char delim, int *qty)
     {
         while (k > 0)
         {
-            sys_memFree((uint64_t)parts[--k]);
+            sys_memFree((void *)parts[--k]);
         }
-        sys_memFree((uint64_t)parts);
+        sys_memFree((void *)parts);
         return NULL;
     }
     strcpy(new_part, buffer);
@@ -513,7 +513,7 @@ void ess(int argc, char *argv[])
     while (1)
     {
         wait(secs);
-        fprintf(STDOUT, "McWhiggin manda saludos al proceso identificable por el siguiente PID: %d\n", (int)currentPid);
+        fprintf(STDOUT, "TanBarOS manda saludos al proceso identificable por el siguiente PID: %d\n", (int)currentPid);
     }
 }
 

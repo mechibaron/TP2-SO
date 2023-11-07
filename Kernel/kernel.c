@@ -39,8 +39,8 @@ void * initializeKernelBinary()
 {
 
 	void * moduleAddresses[] = {
-		sampleCodeModuleAddress,
-		sampleDataModuleAddress
+		(void *)sampleCodeModuleAddress,
+		(void *)sampleDataModuleAddress
 	};
 
 	loadModules(&endOfKernelBinary, moduleAddresses);

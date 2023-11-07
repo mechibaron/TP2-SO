@@ -35,7 +35,7 @@
 #define OPEN 1
 #define CLOSED 0
 
-#define EOF -1
+// #define EOF -1
 typedef struct Pipe
 {
     char data[PIPESIZE];

@@ -1,68 +1,3 @@
-make clean
-clear
-make all
-make clean
-clear
-make all
-make clean
-clear
-make all
-make clean
-clear
-make all
-make clean
-clear
-make all
-make clean
-clear
-make all
-make clean 
-clear
-make all
-make clean
-clear
-make all
-make clean
-clear
-make all 
-make clean
-clear
-make all
-make clean
-clear
-make all
-make clean
-clear
-make all
-make clean
-clear
-make all
-make clean
-clear
-make all
-make clean
-clear
-make all
-cd root
-cd toolchain
-make clean
-make all
-cd ..
-make clean
-clear
-make all
-exit
-cd root
-make clean
-clear
-make all
-exxit
-git  pull
-exit
-cd root
-cd Toolchain 
-make clean
-make all
 cd ..
 make clean 
 clear
@@ -497,4 +432,69 @@ qemu --version
 qemu-system-x86_64 --version
 qemu-system-x86_64 --rtc base=localtime -S -s -hda Image/x64BareBonesImage.qcow2 -m 512 -nographic
 clear
+exit
+cd root
+cd toolchain 
+make clean
+make all
+cd ..
+clear
+make clean
+clear
+make all
+exxit
+exit
+cd root
+make all
+exit
+cd root
+cd toolchain
+make clean
+make all
+cd ..
+make clean
+clear
+make all
+make clean
+clear
+make all
+make clean
+clear
+make all
+make clean
+clear
+make all
+make clean
+clear
+make all
+make clean
+clear
+make all
+make clean
+clear
+make all
+make clean
+clear
+make all
+make clean
+clear
+make all
+make clean
+clear
+make all
+make clean 
+clear
+make all
+make clean 
+clear
+make all
+make clean
+clear
+make all
+make clean
+clear
+make all
+make clean
+clear
+make all
 exit

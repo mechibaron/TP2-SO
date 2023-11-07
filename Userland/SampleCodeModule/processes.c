@@ -262,7 +262,7 @@ void cat(int argc, char *argv[])
 void getProcessesInfo(int argc, char *argv[])
 {
     processInfo *current = sys_ps();
-    char *toPrint;
+    // char *toPrint;
 
     while (current != NULL)
     {

@@ -1,4 +1,5 @@
 #include "include/test_processes.h"
+#include "include/test_util.h"
 #include "include/libc.h"
 #include "include/types.h"
 

@@ -37,24 +37,21 @@ typedef struct {
     int status;
 } Process;
 
+typedef void (*function_ptr)();
 
-void dummyProcess()
-{
-    while (1)
-    {
+void dummyProcess() {
+    while (1) {
         _hlt();
     }
 }
 
-void initializeProcess(Process *process, char *name){
+void initializeProcess(Process *process, char *name) {
     process->name = name;
-    //itera sobre la matriz fileDescriptors 
-    for (int i = 0; i<5; i++){
-        if(i>= 0 && i<= 2){
-        process->fileDescriptors[i] = OPEN;
-        }
-        else{
-        process->fileDescriptors[i] = CLOSED;
+    for (int i = 0; i < 5; i++) {
+        if (i >= 0 && i <= 2) {
+            process->fileDescriptors[i] = OPEN;
+        } else {
+            process->fileDescriptors[i] = CLOSED;
         }
     }
     process->lastFd = 4;
@@ -63,9 +60,11 @@ void initializeProcess(Process *process, char *name){
 
 void createScheduler() {
     char *name = "Kernel Task";
-    Process *activeProcess = createProcess((uint32_t)dummyProcess, 0, NULL);
+    uint64_t (*dummyProcessPtr)(void) = (uint64_t (*)(void))dummyProcess;
+
+    Process *activeProcess = createProcess((uint64_t)dummyProcessPtr, 0, NULL);
     initializeProcess(activeProcess, name);
-    
+
     // Incremento el contador de procesos listos.
     processReadyCount++;
 }
@@ -279,9 +278,9 @@ void nextProcess() {
 
 Node *findProcessInList(Node *list, pid_t pid) {
     Node *current = list;
-    Node *previous = NULL;
+    // Node *previous = NULL;
     while (current != NULL && current->process.pid != pid) {
-        previous = current;
+        // previous = current;
         current = current->next;
     }
     return current;
@@ -390,6 +389,8 @@ uint64_t contextSwitch(uint64_t rsp) {
         nextProcess();
         return active->process.rsp;
     }
+    //por si ninguna condicion se cumple
+    return -1;
 }
 
 
