@@ -17,8 +17,7 @@
         "idtloader.h": "c",
         "interrupts.h": "c",
         "libc.h": "c",
-        "processes.h": "c",
-        "types.h": "c",
-        "memory_resource": "c"
+        "test_sem.h": "c",
+        "test_mm.h": "c"
     }
 }

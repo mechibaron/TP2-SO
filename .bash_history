@@ -1,61 +1,3 @@
-./run.sh
-make buddy
-cd Toolchain 
-make clean
-make all
-cd ..
-make clean
-make all
-make clean
-cd Toolchain 
-make clean
-clear
-make clean
-make all
-cd ..
-make all
-make all
-make clean
-make all
-git add ..
-git add .
-git commit -m "small changes"
-exit
-cd root/
-cd Toolchain/
-make all
-cd ..
-make all
-clear
-extir
-exit
-cd root
-cd toolchain
-make clean
-make all
-cd ..
-make clean
-make all
-make clean
-make all
-make clean
-make all
-make clean
-make all
-make clean
-make all
-clear
-make clean
-clear
-make all
-make clean
-clear
-make all
-make clean
-make all
-make clean
-clear
-make all
 make clean
 clear
 make all
@@ -498,3 +440,61 @@ make all
 make clean
 clear
 make all
+clear
+cd root/
+clear
+cd Toolchain/
+make clean
+make 
+cd ..
+make clean
+make
+make
+clear
+make
+make
+make
+make
+make
+make
+make
+make
+make
+make
+make
+clear
+make
+make
+make
+make
+make
+./run.sh 
+make
+make
+clear
+make
+make
+exti
+exit
+clear
+cd TO
+cd T
+cd root/
+cd Toolchain/
+make clean
+clear
+cd ..
+make clean
+make
+makd
+make
+make
+./run.sh 
+clear
+    qemu-system-x86_64 --rtc base=localtime -S  -s -hda Image/x64BareBonesImage.qcow2 -m 512 #-d int
+qemu-system-x86_64 --rtc base=localtime -S  -s -hda Image/x64BareBonesImage.qcow2 -m 512 #-d int
+qemu --version
+qemu-system-x86_64 --version
+qemu-system-x86_64 --rtc base=localtime -S -s -hda Image/x64BareBonesImage.qcow2 -m 512 -nographic
+clear
+exit

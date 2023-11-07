@@ -392,3 +392,17 @@ void blockProcess(int argc, char *argv[])
         puts("Failed to block/unblock the process\n");
     }
 }
+
+
+void mem(int argc, char *argv[])
+{
+    MemoryInfo *mem = sys_memInfo();
+
+    fprintf(STDOUT, "Algorithm Name: %s\n", mem->memoryAlgorithmName);
+    fprintf(STDOUT, "Free Memory: %d\n", mem->freeMemory);
+    fprintf(STDOUT, "Occupied Memory: %d\n", mem->occupiedMemory);
+    fprintf(STDOUT, "Total Memory: %d\n", mem->totalMemory);
+    fprintf(STDOUT, "Blocks Used: %d\n", mem->blocksUsed);
+
+    sys_memFree((void *)mem);
+}
