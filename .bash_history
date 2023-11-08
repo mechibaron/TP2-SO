@@ -1,53 +1,3 @@
-cd ..
-make clean 
-clear
-make all
-make clean 
-clear
-make all
-make clean 
-clear
-make buddy 
-make clean 
-clear
-make all 
-make clean 
-clear
-make all 
-make clean 
-clear
-make all
-make clean 
-clear
-make all
-make clean 
-clear
-make all
-make clean 
-clear
-make all
-make clean 
-clear
-make all
-make clean 
-make clen 
-make clean 
-clear
-make all
-make clean 
-clear
-make all
-clear
-make all
-cler
-make clean 
-clear
-make all
-make clean 
-clear
-make all
-make clean 
-clear
 make all
 make clean 
 clear
@@ -486,6 +436,56 @@ make clean
 clear
 make all
 make clean 
+clear
+make all
+make clean
+clear
+make all
+make clean
+clear
+make all
+make clean
+clear
+make all
+exit
+cd root
+cd toolchain 
+make all
+cd ..
+make all
+exit
+cd root
+cd toolchain 
+make clean
+make all
+cd image 
+ls
+cd ..
+cd image
+make all
+make clean
+make all
+cd ..
+make all
+exit
+cd root
+cd toolchain
+make clean
+make all
+cd ..
+clear 
+make clean
+clear
+make all
+make clean
+make all
+make clean
+clear
+make all
+make clean
+clear
+make all
+make clean
 clear
 make all
 make clean
