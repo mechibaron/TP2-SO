@@ -39,4 +39,4 @@ t_process_node *dequeue_process(t_process_list *processes){
 
 int queue_is_empty(t_process_list *processes){
     return processes->size==0;
-}
+};

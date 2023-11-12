@@ -18,6 +18,15 @@
         "interrupts.h": "c",
         "libc.h": "c",
         "test_sem.h": "c",
-        "test_mm.h": "c"
+        "test_mm.h": "c",
+        "exceptions.h": "c",
+        "pipe.h": "c",
+        "stdint.h": "c",
+        "cstdlib": "c",
+        "locale": "c",
+        "ostream": "c",
+        "new": "c",
+        "memory_resource": "c",
+        "memory": "c"
     }
 }

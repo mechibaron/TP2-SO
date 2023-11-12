@@ -1,81 +1,39 @@
 #ifndef SCHEDULER_H
 #define SCHEDULER_H
 
-#include <stdint.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <stdint.h>
-#include <naiveConsole.h>
-#include <interrupts.h>
-#include <defs.h>
-#include <time.h>
+#include <scheduler_queue.h>
+#define FOREGROUND 1
+#define BACKGROUND 0
 
+// scheduler
+void initialize_scheduler();
+int new_process(void (*entryPoint)(int, char**), int argc, char** argv,
+                int foreground, int* fd);
+extern void callTimerTick();
+void* scheduler(void* sp);
 
-#define READY 0
-#define BLOCKED 1
-#define FDS 10
-#define OPEN 1
-#define CLOSED 0
-#define PIPESIZE 512
+// estado de proceso
+int set_state(uint64_t pid, int new_state);
+int kill_process(uint64_t pid);
+int block_process(uint64_t pid);
+int ready_process(uint64_t pid);
+int get_process_state(uint64_t pid);
+int kill_current_FG_process();
 
+// getters
+int get_process_PID();
+int get_current_process_read_FD();
+int get_current_process_write_FD();
 
-typedef struct
-{
-    unsigned int mode;
-} fd_t;
+// priority
+int set_priority(uint64_t pid, int new_priority);
+int current_process_is_foreground();
 
-typedef unsigned int priority_t;
-typedef unsigned int status_t;
+// printers
+void print_processes_status();
+void print_current_process();
 
-typedef struct
-{
-    pid_t pid;
-    priority_t priority;
-    int newPriority;
-    status_t status;
-    unsigned int quantumsLeft;
-    uint64_t rsp;
-    uint64_t stackBase;
-    BlockedQueueADT blockedQueue;
-    fd_t fileDescriptors[FDS];
-    // 0: STDIN, 1: STDOUT, 2:STDERR
-    // 3: PIPEW, 4: PIPER
-    Pipe *pipe;
-    unsigned int lastFd;
-    unsigned int argc;
-    char **argv;
-} PCB;
-typedef struct node
-{
-    PCB process;
-    struct node *next;
-} Node;
+// sync
+void yield();
 
-typedef Node *Queue;
-typedef struct processInfo
-{
-    pid_t pid;
-    priority_t priority;
-    uint64_t stackBase;
-    status_t status;
-    struct processInfo *next;
-} processInfo;
-
-void dummyProcess();
-void createScheduler();
-PCB *getProcess(pid_t pid);
-uint64_t getCurrentPid();
-int blockProcess(pid_t pid);
-int unblockProcess(pid_t pid);
-pid_t createProcess(uint64_t rip, int argc, char *argv[]);
-void nextProcess();
-int prepareDummy(pid_t pid);
-uint64_t contextSwitch(uint64_t rsp);
-int killProcess(int returnValue, char autokill);
-int changePriority(pid_t pid, int priorityValue);
-int yieldProcess();
-processInfo * getProccessesInfo();
-
-
-
-#endif // SCHEDULER_H
+#endif

@@ -3,10 +3,8 @@
 #include <defs.h>
 
 
-
-// typedef struct semaphore* sem_t;
-
-sem_t sem_open(char * name, uint64_t value);
-int sem_close(sem_t sem);
-int sem_post(sem_t sem);
-int sem_wait(sem_t sem);
+int sem_open(uint32_t id, uint64_t initial_value);
+int sem_wait(uint32_t id);
+int sem_post(uint32_t id);
+int sem_close(uint32_t id);
+void sem_status();

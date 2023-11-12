@@ -1,29 +1,20 @@
-#ifndef SYSCALLS_H
-#define SYSCALLS_H
+#ifndef _SYSCALLS_MANAGEMENT_H_
+#define _SYSCALLS_MANAGEMENT_H_
 
 #include <stdint.h>
-#include <naiveConsole.h>
-#include <lib.h>
-#include "keyboard.h"
-#include <scheduler.h>
-#include "inforeg.h"
-#include <defs.h>
+#include <keyboard.h>
+#include <time.h>
+#include <memoryManager.h>
 
-#define STDIN 0
-#define STDOUT 1
-#define STDERR 2
-#define PIPEOUT 3
-#define PIPEIN 4
+extern uint64_t RTC(uint64_t time);
 
-void _syscallHandler(void);
-
-
-typedef struct
-{
-    uint8_t day, month, year;
-    uint8_t hours, minutes, seconds;
-} sysTime_t;
-
-uint64_t syscallDispatcher(uint64_t rdi, uint64_t rsi, uint64_t rdx, uint64_t rax, uint64_t *registers);
+uint64_t syscall_handler(uint64_t rdi, uint64_t rsi,uint64_t rdx, uint64_t rcx, uint64_t r8, uint64_t rax);
+uint64_t sys_read_handler(uint64_t fd, char* buf, uint64_t count);
+uint64_t sys_write_handler(uint64_t fd, const char* buf, uint64_t count);
+uint64_t sys_time_handler(uint64_t time);
+int sys_get_registers_handler(uint64_t* dest);
+void write_registers(uint64_t* src);
+void sys_get_memory_handler(uint8_t* start ,uint64_t* dump);
+uint64_t sys_sleep_handler(uint64_t timeout_ms);
 
 #endif

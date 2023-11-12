@@ -1,65 +1,3 @@
-make all
-make clean 
-clear
-make all
-MAKE CLEAN 
-make clean 
-clear
-make all
-make clean 
-clear
-make all
-make clean 
-clear
-make all
-make clean 
-git add .
-exit
-make all
-cd root
-make all
-make clean 
-cd toolchain 
-make clean
-make all
-cd ..
-make clean 
-make alll
-make all
-make clean 
-make all
-exit
-cd root 
-cd toolchain 
-make clean 
-make all
-cd ..
-make clean 
-make all
-clear
-exit
-cd root
-make clean 
-cd toolchain 
-make clean
-make all
-cd ..
-make clean
-make all
-make clean
-make clean 
-make clean 
-make all
-make clean 
-exit
-cd root
-make clean
-make all
-make clean 
-make all
-make clean
-make clean
-make all
 make clean
 make all
 make clean
@@ -497,4 +435,66 @@ make all
 make clean
 clear
 make all
+exit
+cd root
+cd toolchain 
+make all
+cd ..
+make all
+make clean
+make all
+make clean
+clear
+make all
+make clean
+clear
+make all
+make clean
+clear
+make all
+cd root
+cd toolchain 
+make all
+cd ..
+make clean
+make all
+clear
+make clean
+make all
+make clean
+clear
+make all
+make clean
+clear
+make all
+make clean
+clear
+make all
+make clean
+clear
+make all
+make clean
+clear
+make all
+make clean
+clear
+make all
+make clean
+clear
+make all
+make clean
+clear
+make all
+make clean
+clear
+make all
+make clean
+make all
+make clean
+clear
+make all
+make clean
+clear
+make all
+eit
 exit

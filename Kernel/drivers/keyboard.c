@@ -2,6 +2,8 @@
 
 #define BUFFER_LENGTH 32
 
+#define EOF -1
+
 static char keys[] = {
     0,  // Error
     27, // Escape

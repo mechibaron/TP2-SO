@@ -1,139 +1,194 @@
-#include <semaphore.h>
-#include <memoryManager.h>
-#include <queue.h>
-#include <scheduler.h>
+// This is a personal academic project. Dear PVS-Studio, please check it.
+// PVS-Studio Static Code Analyzer for C, C++ and C#: http://www.viva64.com
+#include "../include/lib.h"
+#include "../include/memoryManager.h"
+#include "../include/scheduler.h"
+#include "../include/semaphore.h"
+#include "../include/lib.h"
 
+#define ERROR -1
+#define OK 0
+#define MAX_BLOCKED_PROCESSES 20
+typedef struct t_semaphore {
+    uint32_t id;
+    uint64_t value;
+    int blocked_processes[MAX_BLOCKED_PROCESSES];
+    uint16_t blocked_processes_count;
+    uint16_t listening_processes;
+    struct t_semaphore* next;
+    int lock;
+} t_semaphore;
 
-extern int block(uint8_t *lock); // Both of these functions will be used to avoid
-extern void unblock(uint8_t *lock);  // race conditions in the post and wait
+// Para implementar similar a como tenemos list de processes
+typedef struct t_semaphore_list {
+    t_semaphore* first;
+    t_semaphore* last;
+} t_semaphore_list;
 
-typedef struct semNode
-{
-    semaphore sem;
-    struct semNode *next;
-    struct semNode *previous;
-} semNode;
+t_semaphore* semaphores;
 
-typedef semNode *semList;
+static t_semaphore* get_semaphore(uint32_t id);
+static t_semaphore* new_semaphore(uint32_t id, uint64_t initialValue);
+static void add_to_list(t_semaphore* newSem);
+static void unblock_process(t_semaphore* sem);
+static void remove_from_list(t_semaphore* sem);
+static void blocked_processes_dump(int* blocked_processes, uint16_t blocked_processes_count);
 
-semList semaphoreList = NULL;
+int sem_open(uint32_t id, uint64_t initial_value) {
+    t_semaphore* semaphore = get_semaphore(id);
 
-semNode *findSemaphore(char *name)
-{
-    semNode *current = semaphoreList;
-    while (current != NULL)
-    {
-        if (strcmp(current->sem.name, name) == 0)
-        {
-            return current;
+    if (initial_value < 0) {
+        return ERROR;
+    }
+
+    if (semaphore == NULL) {
+        semaphore = new_semaphore(id, initial_value);
+        if (semaphore == NULL) {
+            return ERROR;
         }
-        current = current->next;
+    }
+
+    if (semaphore->listening_processes >= MAX_BLOCKED_PROCESSES) {
+        return ERROR;
+    }
+
+    semaphore->listening_processes++;
+    return id;
+}
+
+int sem_wait(uint32_t id) {
+    t_semaphore* sem;
+    if ((sem = get_semaphore(id)) == NULL) {
+        return ERROR;
+    }
+
+    acquire(&(sem->lock));
+
+    if (sem->value > 0) {
+        sem->value--;
+        release(&(sem->lock));
+    } else {
+        int currentPID = get_process_PID();
+        sem->blocked_processes[sem->blocked_processes_count++] = currentPID;
+        release(&(sem->lock));
+        block_process(currentPID);
+    }
+    return OK;
+}
+
+int sem_post(uint32_t id) {
+    t_semaphore* sem;
+    if ((sem = get_semaphore(id)) == NULL) {
+        return ERROR;
+    }
+
+    acquire(&(sem->lock));
+    if (sem->blocked_processes_count > 0) {
+        unblock_process(sem);
+    } else {
+        sem->value++;
+    }
+
+    release(&(sem->lock));
+    return OK;
+}
+
+int sem_close(uint32_t id) {
+    t_semaphore* sem;
+    if ((sem = get_semaphore(id)) == NULL) {
+        return ERROR;
+    }
+
+    if (sem->listening_processes > 0) {
+        sem->listening_processes--;
+    }
+
+    if (sem->listening_processes == 0) {
+        remove_from_list(sem);
+        free(sem);
+    }
+
+    return OK;
+}
+
+void sem_status() {
+    printf("\nEstado de los semaforos activos\n\n");
+    t_semaphore* sem = semaphores;
+    while (sem) {
+        printf("ID: %d\n", sem->id);
+        printf("\tValor: %d\n", sem->value);
+        printf("\tCantidad de procesos ligados al semaforo: %d\n", sem->listening_processes);
+        printf("\tCantidad de procesos bloqueados: %d\n", sem->blocked_processes_count);
+        printf("\tProcesos blockeados:\n");
+        blocked_processes_dump(sem->blocked_processes, sem->blocked_processes_count);
+        sem = sem->next;
+    }
+}
+
+static void blocked_processes_dump(int* blocked_processes, uint16_t blocked_processes_count) {
+    for (int i = 0; i < blocked_processes_count; i++) {
+        printf("\tPID: %d\n", blocked_processes[i]);
+    }
+    printf("\n");
+}
+
+static t_semaphore* new_semaphore(uint32_t id, uint64_t initial_value) {
+    t_semaphore* new = malloc(sizeof(t_semaphore));
+    if (new != NULL) {
+        new->id = id;
+        new->value = initial_value;
+        new->blocked_processes_count = 0;
+        new->listening_processes = 0;
+        new->lock = 0;
+        new->next = NULL;
+        add_to_list(new);
+    }
+    return new;
+}
+
+static void add_to_list(t_semaphore* new) {
+    t_semaphore* tail_sem = semaphores;
+    if (tail_sem == NULL) {
+        semaphores = new;
+    } else {
+        while (tail_sem->next != NULL) {
+            tail_sem = tail_sem->next;
+        }
+        tail_sem->next = new;
+    }
+}
+
+static t_semaphore* get_semaphore(uint32_t id) {
+    t_semaphore* result = semaphores;
+    while (result) {
+        if (result->id == id) {
+            return result;
+        }
+        result = result->next;
     }
     return NULL;
 }
 
-// Creates semaphore
-// If same with name already exists already exist, doesnt change value
-sem_t sem_open(char *name, uint64_t value)
-{
-    semNode *semAux = findSemaphore(name);
-    if (semAux != NULL)
-    {
-        semAux->sem.processesOpened++;
-        return &(semAux->sem);
+static void unblock_process(t_semaphore* sem) {
+    int ready_PID = sem->blocked_processes[0];
+
+    for (int i = 0; i < sem->blocked_processes_count - 1; i++) {
+        sem->blocked_processes[i] = sem->blocked_processes[i + 1];
     }
-    semAux = (semNode *)memory_manager_malloc(sizeof(semNode));
-    semAux->sem.name = strcpy(name);
-    semAux->sem.value = value;
-    semAux->sem.locked = 0;
-    semAux->sem.processesOpened = 1;
-    semAux->next = semaphoreList;
-    semAux->previous = NULL;
-    semAux->sem.blockedProcesses = newQueue();
-    semaphoreList = semAux;
-    return &(semAux->sem);
+
+    sem->blocked_processes_count--;
+    ready_process(ready_PID);
 }
 
-// Removes a semaphore
-// 1 if it could remove it, 0 if it wasnt removed but didnt fail (just removed it in this process) -1 if it failed
-int sem_close(sem_t sem)
-{
-    semNode *semAux = findSemaphore(sem->name);
-    if (semAux == NULL)
-    {
-        return -1;
+static void remove_from_list(t_semaphore* sem) {
+    t_semaphore* sem_aux = semaphores;
+    if (sem == sem_aux) {
+        semaphores = sem_aux->next;
+    } else {
+        while (sem_aux->next != sem) {
+            sem_aux = sem_aux->next;
+        }
+        sem_aux->next = sem->next;
     }
-
-    if (sem->processesOpened > 1)
-    {
-        sem->processesOpened--;
-        return 0;
-    }
-
-    if (semAux->previous != NULL)
-    {
-        semAux->previous->next = semAux->next;
-    }
-    if (semAux->next != NULL)
-    {
-        semAux->next->previous = semAux->previous;
-    }
-
-    freeQueue(sem->blockedProcesses);
-    free_memory_manager(sem->name);
-    free_memory_manager(semAux);
-    return 1;
-}
-
-// Adds 1 to the value of a semaphore, if it was blocked (==0) it unblocks one of the blocked process
-// Returns 1 on success, -1 on error
-int sem_post(sem_t sem)
-{
-    semNode *semAux = findSemaphore(sem->name);
-
-    if (semAux == NULL)
-    {
-        return -1;
-    }
-
-    block(&(sem->locked));
-    if (sem->blockedProcesses->size != 0)
-    {
-        pid_t pidCurrent = dequeuePid(sem->blockedProcesses);
-        unblockProcess(pidCurrent);
-    }
-    else
-    {
-        sem->value++;
-    }
-    unblock(&(sem->locked));
-
-    return 1;
-}
-
-// Reduce the value of the semaphore by 1, if it is now 0 it is blocked
-// Returns 1 on success, -1 on error
-int sem_wait(sem_t sem)
-{
-    semNode *semAux = findSemaphore(sem->name);
-
-    if (semAux == NULL)
-    {
-        return -1;
-    }
-
-    block(&(sem->locked));
-    if (sem->value > 0)
-    {
-        sem->value--;
-        unblock(&(sem->locked));
-    }
-    else
-    {
-        pid_t pidCurrent = getCurrentPid();
-        enqueuePid(sem->blockedProcesses, pidCurrent);
-        unblock(&(sem->locked));
-        blockProcess(pidCurrent);
-    }
-    return 1;
+    free(sem);
 }
