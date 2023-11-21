@@ -1,10 +1,10 @@
-#ifndef TYPES_H
-#define TYPES_H
+
+#ifndef UNIQUETYPES_H
+#define UNIQUETYPES_H
 
 #define MAX_BUFFER 512
 
 #include <stdint.h>
-#include <stddef.h>
 
 // Processes
 #define READY 0

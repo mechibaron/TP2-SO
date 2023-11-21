@@ -1,9 +1,6 @@
 #include "include/bash.h"
-#include "include/types.h"
-#include "include/libc.h"
+#include "include/syslib.h"
 #include "include/processes.h"
-
-
 
 #define MAX_SIZE_CMD 32
 static char buffer[32];

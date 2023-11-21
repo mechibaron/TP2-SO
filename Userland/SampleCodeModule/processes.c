@@ -1,6 +1,9 @@
+#include <unistd.h>
 #include "include/processes.h"
-#include "include/libc.h"
-#include "include/types.h"
+#include "include/Uniquetypes.h"
+#include "include/syslib.h"
+#include "include/syslib.h"
+#include <stdint.h>
 
 #define MAX_PHILOSOPHERS 20
 #define EAT_SECONDS 1
@@ -18,12 +21,45 @@ pid_t philosopherPids[MAX_PHILOSOPHERS];
 char philosopherNames[MAX_PHILOSOPHERS] = {'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J'};
 int philosopherCount = 0;
 
+
 void takeChopsticks(int philosopher);
 void putChopsticks(int philosopher);
 void checkAvailability(int philosopher);
 int left(int philosopher);
 int right(int philosopher);
 void printState();
+
+
+void help(int argc, char *argv[])
+{
+    const char *helpstring =
+        "cat                  Replicates whatever you input to the shell.\n"
+        "phylo                Simulates famous synchronization phylosophers problem.\n"
+        "ps                   Prints information about current process.\n"
+        "loop                 Prints a greeting every certain period of time.\n"
+        "filter               Filters input to print only its vowels.\n"
+        "block <pid>          Blocks/unblocks process with pid = <pid>.\n"
+        "kill <pid>           Kills process with pid = <pid>.\n"
+        "nice <pid> <prio>    Changes priority of process with pid = <pid> to <prio>.\n"
+        "wc                   Prints the number of newlines from input.\n"
+        "help                 Provides help information for commands.\n"
+        "time                 Command to display the system day and time.\n"
+        "COMMAND1|COMMAND2    The \"|\" operand allows the output of the first command\n"
+        "                     to be the input of the second command. CTRL+D sends an EOF.\n"
+        "test_mm <max-mem>    Tests memory manager with <max-mem> bytes.\n"
+        "test_priority        Tests priority changes of processes.\n"
+        "test_processes <max-proc>    Tests process creation with <max-proc>.\n"
+        "test_sync <max-proc> <sem-flag>    Tests synchronization of processes.\n";
+
+    puts(helpstring);
+}
+
+void printStates() {
+    for (int i = 0; i < philosopherCount; i++) {
+        philosopherStates[i] == EATING ? fprintf(STDOUT, "E ") : fprintf(STDOUT, ". ");
+    }
+    fprintf(STDOUT, "\n");
+}
 
 void philosopherProcess(int argc, char *argv[]) {
     int philosopher = atoi(argv[1]);
@@ -112,13 +148,6 @@ void finishEating() {
     }
 }
 
-void printState() {
-    for (int i = 0; i < philosopherCount; i++) {
-        philosopherStates[i] == EATING ? fprintf(STDOUT, "E ") : fprintf(STDOUT, ". ");
-    }
-    fprintf(STDOUT, "\n");
-}
-
 void takeChopsticks(int philosopher) {
     sem_wait(mutexSem); // Acceder a la región crítica
 
@@ -174,91 +203,19 @@ void phylo(uint64_t argc, char *argv[]) {
     sys_exit(0);
 }
 
-void wc(int argc, char *argv[])
+void mem(int argc, char *argv[])
 {
-    int c;
-    int lines = 0;
-    while ((c = getChar()) != EOF)
-    {
-        if (c == '\n')
-        {
-            lines++;
-        }
-    }
-    fprintf(STDOUT, "%d lines detected\n", lines);
+    MemoryInfo *mem = sys_memInfo();
+
+    fprintf(STDOUT, "Algorithm Name: %s\n", mem->memoryAlgorithmName);
+    fprintf(STDOUT, "Free Memory: %d\n", mem->freeMemory);
+    fprintf(STDOUT, "Occupied Memory: %d\n", mem->occupiedMemory);
+    fprintf(STDOUT, "Total Memory: %d\n", mem->totalMemory);
+    fprintf(STDOUT, "Blocks Used: %d\n", mem->blocksUsed);
+
+    sys_memFree((void *)mem);
 }
 
-void getTime(int argc, char *argv[])
-{
-    sysTime_t time;
-    char buffer[64];
-    sys_time(&time);
-
-    putChar('\n');
-    uintToBase(time.hours, buffer, 10);
-    puts(buffer);
-    putChar(':');
-    uintToBase(time.minutes, buffer, 10);
-    puts(buffer);
-    putChar(':');
-    uintToBase(time.seconds, buffer, 10);
-    puts(buffer);
-    putChar('\n');
-
-    uintToBase(time.day, buffer, 10);
-    puts(buffer);
-    putChar('/');
-    uintToBase(time.month, buffer, 10);
-    puts(buffer);
-    putChar('/');
-    uintToBase(time.year + 2000, buffer, 10);
-    puts(buffer);
-}
-
-void filter(int argc, char *argv[])
-{
-
-    char vowels[] = {'a', 'e', 'i', 'o', 'u'};
-    char capitalVowels[] = {'A', 'E', 'I', 'O', 'U'};
-    int c;
-    while ((c = getChar()) != EOF)
-    {
-        for (int k = 0; k < 5; k++)
-        {
-            if (c == vowels[k])
-            {
-                fprintf(STDOUT, "%c", vowels[k]);
-            }
-            if (c == capitalVowels[k])
-            {
-                fprintf(STDOUT, "%c", capitalVowels[k]);
-            }
-        }
-    }
-}
-
-void cat(int argc, char *argv[])
-{
-    int i = 0, c = getChar();
-    while (c != EOF)
-    {
-        if (c == '\b' && i > 0)
-        {
-            i--;
-            putChar(c);
-        }
-        else if (c == '\b' && i == 0)
-        {
-            // no hago nada
-        }
-        else
-        {
-            i++;
-            putChar(c);
-        }
-        c = getChar();
-    }
-}
 void getProcessesInfo(int argc, char *argv[])
 {
     processInfo *current = sys_ps();
@@ -274,52 +231,6 @@ void getProcessesInfo(int argc, char *argv[])
         current = current->next;
     }
 }
-void help(int argc, char *argv[])
-{
-    const char *helpstring =
-        "cat                  Replicates whatever you input to the shell.\n"
-        "phylo                Simulates famous synchronization phylosophers problem.\n"
-        "ps                   Prints information about current process.\n"
-        "loop                 Prints a greeting every certain period of time.\n"
-        "filter               Filters input to print only its vowels.\n"
-        "block <pid>          Blocks/unblocks process with pid = <pid>.\n"
-        "kill <pid>           Kills process with pid = <pid>.\n"
-        "nice <pid> <prio>    Changes priority of process with pid = <pid> to <prio>.\n"
-        "wc                   Prints the number of newlines from input.\n"
-        "help                 Provides help information for commands.\n"
-        "time                 Command to display the system day and time.\n"
-        "COMMAND1|COMMAND2    The \"|\" operand allows the output of the first command\n"
-        "                     to be the input of the second command. CTRL+D sends an EOF.\n"
-        "test_mm <max-mem>    Tests memory manager with <max-mem> bytes.\n"
-        "test_priority        Tests priority changes of processes.\n"
-        "test_processes <max-proc>    Tests process creation with <max-proc>.\n"
-        "test_sync <max-proc> <sem-flag>    Tests synchronization of processes.\n";
-
-    puts(helpstring);
-}
-
-void inforeg(int argc, char *argv[])
-{
-    static char *registers[18] = {"R15", "R14", "R13", "R12", "R11", "R10", "R9 ", "R8 ", "RSI", "RDI", "RBP", "RDX", "RCX", "RBX", "RAX", "RIP", "RFL", "RSP"};
-
-    uint64_t regval[18];
-    int sysret = sys_getregs(regval);
-    if (sysret == 0)
-    {
-        puts("No registers to print.\n");
-        return;
-    }
-    char buffer[64];
-    for (int i = 0; i < 18; i++)
-    {
-        puts(registers[i]);
-        puts(": 0x");
-        uintToBase(regval[i], buffer, 16);
-        puts(buffer);
-        putChar('\n');
-    }
-}
-
 
 void loopProcess(int argc, char *argv[])
 {
@@ -328,7 +239,7 @@ void loopProcess(int argc, char *argv[])
     while (1)
     {
         wait(secs);
-        fprintf(STDOUT, "McWhiggin manda saludos al proceso identificable por el siguiente PID: %d\n", (int)currentPid);
+        fprintf(STDOUT, "TanBarOS manda saludos al proceso identificable por el siguiente PID: %d\n", (int)currentPid);
     }
 }
 
@@ -368,7 +279,6 @@ void niceProcess(int argc, char *argv[])
     }
 }
 
-
 void blockProcess(int argc, char *argv[])
 {
     if (argc != 2)
@@ -394,15 +304,113 @@ void blockProcess(int argc, char *argv[])
 }
 
 
-void mem(int argc, char *argv[])
+void cat(int argc, char *argv[])
 {
-    MemoryInfo *mem = sys_memInfo();
-
-    fprintf(STDOUT, "Algorithm Name: %s\n", mem->memoryAlgorithmName);
-    fprintf(STDOUT, "Free Memory: %d\n", mem->freeMemory);
-    fprintf(STDOUT, "Occupied Memory: %d\n", mem->occupiedMemory);
-    fprintf(STDOUT, "Total Memory: %d\n", mem->totalMemory);
-    fprintf(STDOUT, "Blocks Used: %d\n", mem->blocksUsed);
-
-    sys_memFree((void *)mem);
+    int i = 0, c = getChar();
+    while (c != EOF)
+    {
+        if (c == '\b' && i > 0)
+        {
+            i--;
+            putChar(c);
+        }
+        else if (c == '\b' && i == 0)
+        {
+            // no hago nada
+        }
+        else
+        {
+            i++;
+            putChar(c);
+        }
+        c = getChar();
+    }
 }
+
+void wc(int argc, char *argv[])
+{
+    int c;
+    int lines = 0;
+    while ((c = getChar()) != EOF)
+    {
+        if (c == '\n')
+        {
+            lines++;
+        }
+    }
+    fprintf(STDOUT, "%d lines detected\n", lines);
+}
+
+void filter(int argc, char *argv[])
+{
+
+    char vowels[] = {'a', 'e', 'i', 'o', 'u'};
+    char capitalVowels[] = {'A', 'E', 'I', 'O', 'U'};
+    int c;
+    while ((c = getChar()) != EOF)
+    {
+        for (int k = 0; k < 5; k++)
+        {
+            if (c == vowels[k])
+            {
+                fprintf(STDOUT, "%c", vowels[k]);
+            }
+            if (c == capitalVowels[k])
+            {
+                fprintf(STDOUT, "%c", capitalVowels[k]);
+            }
+        }
+    }
+}
+
+
+void getTime(int argc, char *argv[])
+{
+    sysTime_t time;
+    char buffer[64];
+    sys_time(&time);
+
+    putChar('\n');
+    uintToBase(time.hours, buffer, 10);
+    puts(buffer);
+    putChar(':');
+    uintToBase(time.minutes, buffer, 10);
+    puts(buffer);
+    putChar(':');
+    uintToBase(time.seconds, buffer, 10);
+    puts(buffer);
+    putChar('\n');
+
+    uintToBase(time.day, buffer, 10);
+    puts(buffer);
+    putChar('/');
+    uintToBase(time.month, buffer, 10);
+    puts(buffer);
+    putChar('/');
+    uintToBase(time.year + 2000, buffer, 10);
+    puts(buffer);
+}
+
+
+
+// void inforeg(int argc, char *argv[])
+// {
+//     static char *registers[18] = {"R15", "R14", "R13", "R12", "R11", "R10", "R9 ", "R8 ", "RSI", "RDI", "RBP", "RDX", "RCX", "RBX", "RAX", "RIP", "RFL", "RSP"};
+
+//     uint64_t regval[18];
+//     int sysret = sys_getregs(regval);
+//     if (sysret == 0)
+//     {
+//         puts("No registers to print.\n");
+//         return;
+//     }
+//     char buffer[64];
+//     for (int i = 0; i < 18; i++)
+//     {
+//         puts(registers[i]);
+//         puts(": 0x");
+//         uintToBase(regval[i], buffer, 16);
+//         puts(buffer);
+//         putChar('\n');
+//     }
+// }

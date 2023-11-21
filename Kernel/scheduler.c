@@ -1,5 +1,5 @@
 
-#include "scheduler.h"
+#include <scheduler.h>
 #include <interrupts.h>
 #include <memoryManager.h>
 #include <queue.h>
@@ -14,6 +14,7 @@ extern void _int20h();                                                          
 #define STACK_SIZE 4096
 #define MIN_PRIORITY 1
 #define MAX_PRIORITY 9
+#define EOF -1
 
 #define NUMBER_OF_PRIORITIES 9
 #define DEFAULT_PRIORITY 4
@@ -45,28 +46,21 @@ void dummyProcess() {
     }
 }
 
-void initializeProcess(Process *process, char *name) {
-    process->name = name;
-    for (int i = 0; i < 5; i++) {
-        if (i >= 0 && i <= 2) {
-            process->fileDescriptors[i] = OPEN;
-        } else {
-            process->fileDescriptors[i] = CLOSED;
-        }
+void createScheduler()
+{
+    dummyProcessPid = new_process((uint64_t)dummyProcess, 0, NULL);
+    for (int i = 0; i <= 2; i++)
+    {
+        active->process.fileDescriptors[i].mode = OPEN;
     }
-    process->lastFd = 4;
-    process->status = BLOCKED;
-}
-
-void createScheduler() {
-    char *name = "Kernel Task";
-    uint64_t (*dummyProcessPtr)(void) = (uint64_t (*)(void))dummyProcess;
-
-    Process *activeProcess = createProcess((uint64_t)dummyProcessPtr, 0, NULL);
-    initializeProcess(activeProcess, name);
-
-    // Incremento el contador de procesos listos.
-    processReadyCount++;
+    // PIPEOUT, PIPEIN
+    for (int i = 3; i <= 4; i++)
+    {
+        active->process.fileDescriptors[i].mode = CLOSED;
+    }
+    active->process.lastFd = 4;
+    active->process.status = BLOCKED;
+    processReadyCount--;
 }
 
 PCB *getProcess(pid_t pid) {
@@ -158,6 +152,7 @@ int unblockProcess(pid_t pid) {
 }
 
 char **copy_argv(int argc, char **argv) {
+
     char **new_argv = memory_manager_malloc(sizeof(char *) * argc);
 
     for (int i = 0; i < argc; i++) {
@@ -172,7 +167,7 @@ char **copy_argv(int argc, char **argv) {
 }
 
 
-pid_t createProcess(uint64_t rip, int argc, char *argv[]) {
+pid_t new_process(uint64_t rip, int argc, char *argv[]) {
     Node *newProcess = memory_manager_malloc(sizeof(Node));
     newProcess->process.pid = processAmount++;
     newProcess->process.priority = DEFAULT_PRIORITY;

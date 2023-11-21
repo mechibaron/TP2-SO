@@ -2,9 +2,8 @@
 #include <lib.h>
 #include <moduleLoader.h>
 #include <naiveConsole.h>
-#include <graphicMode.h>
 #include <idtLoader.h>
-#include <stddef.h>
+#include <memoryManager.h>
 #include <scheduler.h>
 
 extern uint8_t text;
@@ -14,10 +13,13 @@ extern uint8_t bss;
 extern uint8_t endOfKernelBinary;
 extern uint8_t endOfKernel;
 
+// #define HEAP_SIZE (1024 * 1024 * 64)
+
 static const uint64_t PageSize = 0x1000;
 
 static uint64_t const sampleCodeModuleAddress = 0x400000;
 static uint64_t const sampleDataModuleAddress = 0x500000;
+static void* const sampleCodeModuleHeapAddress = (void*)0x600000;
 
 typedef int (*EntryPoint)();
 
@@ -28,11 +30,7 @@ void clearBSS(void * bssAddress, uint64_t bssSize){
 
 void * getStackBase()
 {
-	return (void*)(
-		(uint64_t)&endOfKernel
-		+ PageSize * 8				// The size of the stack itself, 32KiB
-		- sizeof(uint64_t)			// Begin at the top of the stack
-	);
+	return (void*)((uint64_t)&endOfKernel + PageSize * 8- sizeof(uint64_t));				// The size of the stack itself, 32KiB- sizeof(uint64_t)			// Begin at the top of the stack);
 }
 
 void * initializeKernelBinary()
@@ -55,7 +53,7 @@ int main(){
 	load_idt();
 	createMemory(0x2000000 - 0x1000000);
 	createScheduler();
-	createProcess(sampleCodeModuleAddress, 0, NULL);
+	new_process(sampleCodeModuleAddress, 0, NULL);
 	_sti();
 	_hlt();
 	return 0;

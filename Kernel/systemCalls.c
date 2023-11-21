@@ -174,7 +174,7 @@ static void sys_write(unsigned int fd, const char *buffer, uint64_t count)
 
 static pid_t sys_exec(uint64_t program, unsigned int argc, char *argv[])
 {
-    return createProcess(program, argc, argv);
+    return new_process(program, argc, argv);
 }
 
 static void sys_exit(int return_value, char autokill)

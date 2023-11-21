@@ -2,6 +2,7 @@
 #define LIB_H
 
 #include <stdint.h>
+#include <stdarg.h>
 
 
 void* memset(void * destination, int32_t character, uint64_t length);
@@ -13,6 +14,7 @@ uint8_t getDay();
 uint8_t getMonth();
 uint8_t getYear();
 uint8_t read_port(uint8_t key);
+// void printf(char * string , ...);
 char *cpuVendor(char *result);
 void tick();
 void loadUserland(uint64_t * address, uint64_t * rsp);

@@ -1,11 +1,11 @@
 // This is a personal academic project. Dear PVS-Studio, please check it.
 // PVS-Studio Static Code Analyzer for C, C++ and C#: http://www.viva64.com
-#include "include/test_util.h"
-#include "include/test_mm.h"
+#include "test_util.h"
+#include "test_mm.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "include/types.h"
+#include "include/Uniquetypes.h"
 
 
 

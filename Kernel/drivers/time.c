@@ -13,7 +13,3 @@ int ticks_elapsed() {
 int seconds_elapsed() {
 	return ticks / 18;
 }
-
-int miliseconds_elapsed() {
-	return (ticks*1000)/18;
-}

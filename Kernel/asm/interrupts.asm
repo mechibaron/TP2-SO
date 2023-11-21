@@ -55,69 +55,33 @@ SECTION .text
 	pop rax
 %endmacro
 
-; %macro irqHandlerMaster 1
-; 	pushState
-
-; 	mov rdi, %1 ; pasaje de parametro
-; 	mov rsi, rsp	; pointer a backup registros
-; 	call irqDispatcher
-
-; 	; signal pic EOI (End of Interrupt)
-; 	mov al, 20h
-; 	out 20h, al
-
-; 	popState
-; 	iretq
-; %endmacro
-
-
 %macro irqHandlerMaster 1
 	pushState
 
 	mov rdi, %1 ; pasaje de parametro
-
-	;Si rdi es '1' quiere decir que la interrupción fue de teclado
-	;Si no es uno, salto la parte de guardar registros
-	cmp rdi, 1
-	jnz .continue
-
-	;Levanto el valor de todos los registros previo a entrar a la interrupción
-	;El rsp tendrá el valor que le correspondía a antes de entrar 
-	popState
-
-	mov qword [regs], r15
-	mov qword [regs+8], r14
-	mov qword [regs+(2*8)], r13
-	mov qword [regs+(3*8)], r12
-	mov qword [regs+(4*8)], r11
-	mov qword [regs+(5*8)], r10
-	mov qword [regs+(6*8)], r9
-	mov qword [regs+(7*8)], r8
-	mov qword [regs+(8*8)], rsi
-	mov qword [regs+(9*8)], rdi
-	mov qword [regs+(10*8)], rbp
-	mov qword [regs+(11*8)], rdx
-	mov qword [regs+(12*8)], rcx
-	mov qword [regs+(13*8)], rbx
-	mov qword [regs+(14*8)], rax
-	mov qword [regs+(15*8)], rsp
-
-	;Vuelvo a mandar los registros al stack para el popState previo a salir de la macro
-	pushState
-
-	;Fuerzo el pasaje a rdi de 1 porque en el popState "perdí" el valor inicial de rdi
-	;Sabemos que es 1 porque sino hubiera ido al continue
-	mov rdi, 1
-
-	.continue:
+	mov rsi, rsp	; pointer a backup registros
 	call irqDispatcher
-
-	;Después de llamar a la interrupción piso todos los valores en 0
-	call delete_saved_registers
 
 	; signal pic EOI (End of Interrupt)
 	mov al, 20h
 	out 20h, al
+
+	popState
+	iretq
+%endmacro
+
+
+%macro exceptionHandler 1
+	pushState
+
+	;rdi, rsi, rdx, rcx, r8 y r9
+	mov rdi, %1 ; pasaje de parametro
+	mov rsi, [rsp+15*8]	; Position of the original RIP in the stack
+	mov rdx, [rsp+18*8]	; Position of the original RSP in the stack
+	mov rcx, rsp
+	;Should we call haltcpu? _hlt? go to the return of the main function?
+	;Should we call or modify the RIP value in the stack?
+	call haltcpu
 
 	popState
 	iretq
@@ -200,29 +164,3 @@ haltcpu:
 _endhaltcpu:
 	jmp haltcpu
 
-get_saved_registers:
-	mov rax, regs
-	ret
-
-delete_saved_registers:
-	mov qword [regs], 0
-	mov qword [regs+8], 0
-	mov qword [regs+(2*8)], 0
-	mov qword [regs+(3*8)], 0
-	mov qword [regs+(4*8)], 0
-	mov qword [regs+(5*8)], 0
-	mov qword [regs+(6*8)], 0
-	mov qword [regs+(7*8)], 0
-	mov qword [regs+(8*8)], 0
-	mov qword [regs+(9*8)], 0
-	mov qword [regs+(10*8)], 0
-	mov qword [regs+(11*8)], 0
-	mov qword [regs+(12*8)], 0
-	mov qword [regs+(13*8)], 0
-	mov qword [regs+(14*8)], 0
-	mov qword [regs+(15*8)], 0
-	ret
-
-SECTION .bss
-	aux resq 1
-	regs resb 1024

@@ -8,134 +8,129 @@
 
 #define TRUE 1
 #define FALSE !TRUE
-#define MEMORY_MANAGER_NAME "Size allocation"
 #define START_ADDRESS 0xF00000
+#define MEMORY_MANAGER_NAME "Dynamic memory allocation"
+
+size_t totalHeapMemory;
+size_t usedHeapMemory;
+size_t memoryBlockCount;
+
+BlockADT head = NULL;
 
 
-typedef long Align;
+// static header* base;
+// static header* free_node = NULL;
+// uint64_t total_heap_size;
 
-typedef union header {
-    struct {
-        union header* ptr;
-        uint64_t size;
-    } data;
+// static header* base;
 
-    Align x;
-} header;
-
-static header* base;
-static header* free_node = NULL;
-
-uint64_t total_heap_size;
-char* start_address;
+// uint64_t total_heap_size;
+// char* start_address;
 
 void createMemory(size_t size) {
-    if (size == 0) {
-        return;
-    }
-    char* start_address = (char*)START_ADDRESS;
-
-    total_heap_size = (size + sizeof(header) - 1) / sizeof(header) + 1;
-    free_node = base = (header*)(start_address);
-    free_node->data.size = total_heap_size;
-    free_node->data.ptr = free_node;
+    totalHeapMemory = size;
+    usedHeapMemory = sizeof(BlockCDT);
+    memoryBlockCount = 1;
+    head = (BlockADT)START_ADDRESS;
+    head->size = 0;
+    head->unused = totalHeapMemory - usedHeapMemory;
+    
+    head->prev = NULL;
+    head->next = NULL;
 }
 
 void* memory_manager_malloc(size_t nbytes) {
-    if (nbytes == 0) {
+if (nbytes == 0)
+        return NULL;
+
+    BlockADT current = head;
+    BlockADT prev = NULL;
+
+    while (current != NULL && (current->size < nbytes))
+    {
+        prev = current;
+        current = current->next;
+    }
+
+    if (current == NULL)
+        return NULL;
+
+    if (current->size == nbytes)
+    {
+        if (prev != NULL)
+            prev->next = current->next;
+        else
+            head = current->next;
+
+        usedHeapMemory += nbytes;
+        memoryBlockCount++;
+        return (void *)(current + 1); // Skip the block header
+    }
+    else
+    {
+        BlockADT newBlock = (BlockADT)((char *)current + nbytes + sizeof(BlockCDT));
+        newBlock->size = current->size - nbytes - sizeof(BlockCDT);
+        current->size = nbytes;
+
+        if (prev != NULL)
+            prev->next = newBlock;
+        else
+            head = newBlock;
+
+        usedHeapMemory += nbytes;
+        memoryBlockCount++;
+        return (void *)(current + 1); // Skip the block header
+    }
+}
+
+void free_memory_manager(void* ap) {
+     if (ap == NULL)
+        return;
+
+    BlockADT block = (BlockADT)((char *)ap - sizeof(BlockCDT));
+    usedHeapMemory -= block->size;
+    memoryBlockCount--;
+
+    // Add the freed block back to the free list
+    block->next = head;
+    head = block;
+}
+
+MemoryInfo *mem_info()
+{
+    MemoryInfo *info = (MemoryInfo *)memory_manager_malloc(sizeof(MemoryInfo));
+    if (info == NULL)
+    {
         return NULL;
     }
 
-    void* result;
-    header* current_node, * previous_ptr;
-    uint64_t malloc_units = (nbytes + sizeof(header) - 1) / sizeof(header) + 1;
-    previous_ptr = free_node;
-    char node_found = TRUE;
-
-    for (current_node = previous_ptr->data.ptr; node_found; current_node = current_node->data.ptr) {
-        if (current_node->data.size >= malloc_units) {
-            if (current_node->data.size == malloc_units) {
-                previous_ptr->data.ptr = current_node->data.ptr;
-            }
-            else {
-                current_node->data.size -= malloc_units;
-                current_node += current_node->data.size;
-                current_node->data.size = malloc_units;
-            }
-            free_node = previous_ptr;
-            result = (void*)(current_node + 1);
-            node_found = FALSE;
-        }
-        if (current_node == free_node) {
-            return NULL;
-        }
-        previous_ptr = current_node;
-    }
-    return result;
-}
-
-void free_memory_manager(void* block_blocked) {
-    if (block_blocked == NULL) {
-        return;
-    }
-
-    header* free_block = (header*)((char*)block_blocked - sizeof(header));
-    if (free_block < base || free_block >= (base + total_heap_size)) {
-        return;
-    }
-
-    header* current_node;
-    char check_external = TRUE;
-
-    for (current_node = free_node; (free_block <= current_node || free_block >= current_node->data.ptr) && !check_external; current_node = current_node->data.ptr) {
-        if (current_node >= current_node->data.ptr && (free_block > current_node || free_block < current_node->data.ptr)) {
-            check_external = FALSE;
-        }
-    }
-
-    if (!check_external) {
-        if (current_node + current_node->data.size == free_block) {
-            current_node->data.size += free_block->data.size;
-            current_node->data.ptr = free_block->data.ptr;
-        }
-        else {
-            free_block->data.ptr = current_node->data.ptr;
-            free_node = free_block;
-        }
-    }
-    else {
-        free_block->data.ptr = current_node->data.ptr;
-        free_node = free_block;
-    }
-}
-
-MemoryInfo* mem_info() {
-    MemoryInfo* info = (MemoryInfo*)memory_manager_malloc(sizeof(MemoryInfo));
-    if (info != NULL) {
-        info->memoryAlgorithmName = MEMORY_MANAGER_NAME;
-        info->totalMemory = total_heap_size * sizeof(header);
-        info->freeMemory = 0;
-        info->occupiedMemory = 0;
-        info->blocksUsed = 0;
-
-        size_t free_mem = 0;
-        int block_number = 0;
-        header* current = free_node;
-        char flag = 1;
-
-        while (current != free_node || flag) {
-            flag = 0;
-            free_mem += current->data.size * sizeof(header);
-            block_number++;
-            current = current->data.ptr;
-        }
-
-        info->freeMemory = free_mem;
-        info->occupiedMemory = info->totalMemory - free_mem;
-        info->blocksUsed = block_number;
-    }
-
+    info->memoryAlgorithmName = MEMORY_MANAGER_NAME;
+    info->totalMemory = totalHeapMemory;
+    info->occupiedMemory = usedHeapMemory;
+    info->freeMemory = totalHeapMemory - usedHeapMemory;
+    info->blocksUsed = memoryBlockCount;
     return info;
 }
+    // printf("\nUsando memory manager\n");
+    // printf("VUELCO DE MEMORIA \n");
+    // printf("\nMemoria Total: %d bytes\n\n", (uint32_t)total_heap_size * sizeof(header));
+
+    // if (free_node == NULL) {
+    //     printf("\nNo hay bloques de memoria disponibles.\n");
+    //     return;
+    // }
+    // printf("Bloques libres:\n\n");
+
+    // while (current != first || flag) {
+    //     flag = FALSE;
+    //     printf("\tBloque numero: %d\n", block_number);
+    //     printf("\tBase:%x\n", (uint64_t)current);
+    //     printf("\tBytes disponibles: %d\n\n", (int)current->data.size);
+
+    //     current = current->data.ptr;
+    //     block_number++;
+    // }
+
+    // printf("\n");
 
 #endif

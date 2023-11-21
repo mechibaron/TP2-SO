@@ -1,8 +1,9 @@
 // This is a personal academic project. Dear PVS-Studio, please check it.
 // PVS-Studio Static Code Analyzer for C, C++ and C#: http://www.viva64.com
-#include "include/test_priority.h"
-#include "include/libc.h"
-#include "include/test_util.h"
+
+#include "test_priority.h"
+#include "test_util.h"
+#include "include/syslib.h"
 
 #define WAIT 90000000 // Change this value to make the wait long enough to see theese processes beeing run at least twice
 

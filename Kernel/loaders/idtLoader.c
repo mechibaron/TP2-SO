@@ -1,13 +1,8 @@
-#include <stdint.h>
+
 #include <idtLoader.h>
-#include <defs.h>
-#include <interrupts.h>
-#include <systemCalls.h>
 
 #pragma pack(push)		// Current lineup push 
 #pragma pack (1) 		// Align the following structures to 1 byte 
-
-
 
 // Interrupt descriptor 
 typedef struct {

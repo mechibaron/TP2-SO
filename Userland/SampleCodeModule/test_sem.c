@@ -1,5 +1,5 @@
-#include "include/test_sem.h"
-#include "include/libc.h"
+#include "test_sem.h"
+#include "include/syslib.h"
 
 #define SEM_ID "sem"
 #define TOTAL_PAIR_PROCESSES 32

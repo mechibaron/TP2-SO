@@ -1,5 +1,4 @@
 #include "../include/queue.h"
-#include <stddef.h>
 
 //funcion para la nueva queue de bloqueados
 BlockedQueueADT newQueue() {

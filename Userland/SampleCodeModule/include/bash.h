@@ -1,7 +1,7 @@
 #ifndef BASH_H
 #define BASH_H
 
-#include <libc.h>
+#include <syslib.h>
 
 void bash();
 

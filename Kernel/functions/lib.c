@@ -2,6 +2,10 @@
 #include <stddef.h>
 #include <memoryManager.h>
 
+#define FMT_DECIMAL 10
+#define STDOUT 1
+#define STDIN 0
+
 void * memset(void * destination, int32_t c, uint64_t length)
 {
 	uint8_t chr = (uint8_t)c;
@@ -82,3 +86,55 @@ int strcmp (const char *p1, const char *p2){
   while (c1 == c2);
   return c1 - c2;
 }
+
+// void printf(char * string , ...){
+//     int i=0, indexBuffer=0;
+//     char buff[100] = {0}, aux[20];
+//     char *aux_str;
+//     va_list ap;
+//     va_start(ap, string);
+
+//     while (string[i])    
+//     {
+//         if (string[i]=='%'){
+//             i++;
+//             switch (string[i])
+//             {
+//             case 'd':
+//                 itoa(va_arg(ap, int), aux, FMT_DECIMAL);
+//                 for(int i = 0 ; aux[i]!=0 ;i++){
+//                     buff[indexBuffer++] = aux[i];
+//                 }
+//                 break;
+            
+//             case 'c':
+//                 buff[indexBuffer++]=(char)va_arg(ap, int);
+//                 break;
+
+//             case 's':
+//                 aux_str = (char*)va_arg(ap, char*);
+//                 for(int j = 0 ; aux_str[j]!=0 ;j++){
+//                     buff[indexBuffer++] = aux_str[j];
+//                 }
+//                 break;
+            
+//             case 'x':
+//                 intToHexa(va_arg(ap, int), aux, 4);
+//                 for(int i = 0 ; aux[i]!=0 ;i++){
+//                     buff[indexBuffer++] = aux[i];
+//                 }
+//                 break;
+
+//             default:
+//                 //tiramos excepcion por formato invalido
+//                 break;
+//             }
+
+//         }else{
+//             buff[indexBuffer++] = string[i];
+//         }
+//         i++;
+//     }
+//     sys_write_handler(STDOUT,buff,indexBuffer);
+//     va_end(ap);
+// }

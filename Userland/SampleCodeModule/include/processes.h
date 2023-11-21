@@ -12,7 +12,6 @@ void fibonacciNumbs(int argc, char *argv[]);
 void test_mm(int argc, char *argv[]);
 void test_processes(int argc, char *argv[]);
 void test_priority(int argc, char *argv[]);
-void test_priority(int argc, char *argv[]);
 void test_sem(int argc, char *argv[]);
 void phylo(uint64_t argc, char *argv[]);
 void getProcessesInfo(int argc, char *argv[]);

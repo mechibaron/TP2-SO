@@ -18,6 +18,8 @@
         "interrupts.h": "c",
         "libc.h": "c",
         "test_sem.h": "c",
-        "test_mm.h": "c"
+        "test_mm.h": "c",
+        "stddef.h": "c",
+        "stdint.h": "c"
     }
 }
